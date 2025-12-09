@@ -12,7 +12,10 @@ git clone $REPO_URL $TEMP_DIR
 
 Write-Host "2. Preparing files..."
 # Clean existing files in temp repo (keep .git)
-Get-ChildItem -Path $TEMP_DIR -Exclude ".git" | Remove-Item -Recurse -Force
+Set-Location $TEMP_DIR
+git rm -rf .
+git clean -fdx
+Set-Location ..
 
 # Copy new files from apps/customer
 Write-Host "Copying from $SOURCE_DIR to $TEMP_DIR..."
