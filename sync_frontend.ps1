@@ -30,6 +30,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "3. Committing and Pushing..."
 Set-Location $TEMP_DIR
+git status
 git add .
 git commit -m "Manual sync from local monorepo"
 git push origin main
