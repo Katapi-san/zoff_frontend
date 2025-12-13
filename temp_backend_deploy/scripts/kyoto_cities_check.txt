@@ -1,0 +1,10 @@
+Found 9 stores in Kyoto.
+Name: 京都河原町店, City: '京都市'
+Name: イオンモール久御山店, City: '久世郡久御山町'
+Name: イオンモール高の原店, City: '木津川市'
+Name: イオンモールKYOTO店, City: '京都市'
+Name: イオンモール京都桂川店, City: '京都市'
+Name: 洛北阪急スクエア店, City: '京都市'
+Name: 京都ポルタ店, City: '京都市'
+Name: 京都河原町店, City: '京都市'
+Name: Marche イオン京都洛南SC店, City: '京都市'
