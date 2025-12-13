@@ -31,11 +31,17 @@ export interface Staff {
 }
 
 export async function fetchStores(prefecture?: string, city?: string): Promise<Store[]> {
+    // Debug logging to verify code version
+    console.log(`[API] Fetching stores from: ${API_BASE_URL}/stores/`);
+
     const params = new URLSearchParams();
     if (prefecture) params.append("prefecture", prefecture);
     if (city) params.append("city", city);
+    // Cache busting
+    params.append("_t", Date.now().toString());
 
-    const res = await fetch(`${API_BASE_URL}/stores?${params.toString()}`, {
+    // Add trailing slash to prevent backend from redirecting to HTTP (307)
+    const res = await fetch(`${API_BASE_URL}/stores/?${params.toString()}`, {
         cache: "no-store",
     });
 
