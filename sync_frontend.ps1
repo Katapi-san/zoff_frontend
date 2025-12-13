@@ -8,8 +8,12 @@ $SOURCE_DIR = "$PSScriptRoot\apps\customer"
 $DEPLOY_USER = 'REDACTED'
 $DEPLOY_PASS = 'REDACTED'
 
-# Construct URL with credentials
-$REPO_URL = "https://${DEPLOY_USER}:${DEPLOY_PASS}@zoff-scope-frontend.scm.azurewebsites.net:443/zoff-scope-frontend.git"
+# Encode credentials to handle special characters (like /, @, :) in URL
+$EncodedUser = [Uri]::EscapeDataString($DEPLOY_USER)
+$EncodedPass = [Uri]::EscapeDataString($DEPLOY_PASS)
+
+# Construct URL with encoded credentials
+$REPO_URL = "https://${EncodedUser}:${EncodedPass}@zoff-scope-frontend.scm.azurewebsites.net:443/zoff-scope-frontend.git"
 $TEMP_DIR = "$PSScriptRoot\temp_frontend_sync"
 
 Write-Host "1. Cloning remote repository..."
