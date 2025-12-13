@@ -1,40 +1,28 @@
-
-# Frontend Sync Script (Standalone Artifact Deployment)
+# Frontend Sync Script (Zip Deploy)
 $ErrorActionPreference = "Stop"
 
 $SOURCE_DIR = "$PSScriptRoot\apps\customer"
-# Azure Deployment Credentials (Fill these in!)
-# NOTE: Use single quotes '' to handle special characters like $ safely
+# Azure Deployment Credentials
 $DEPLOY_USER = '$zoff-scope-frontend'
 $DEPLOY_PASS = '2eTLRd9aco4QpLcH3rh3GhGR8DaMBtMSBRg3i4lzEtjQQ5X9Rd49XoXa6vN9'
 
-# Encode credentials to handle special characters (like /, @, :) in URL
-$EncodedUser = [Uri]::EscapeDataString($DEPLOY_USER)
-$EncodedPass = [Uri]::EscapeDataString($DEPLOY_PASS)
+# API URL for Zip Deploy (isAsync=true is recommended for stability)
+$ZIP_DEPLOY_URL = "https://zoff-scope-frontend.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
 
-# Construct URL with encoded credentials
-$REPO_URL = "https://${EncodedUser}:${EncodedPass}@zoff-scope-frontend.scm.azurewebsites.net:443/zoff-scope-frontend.git"
 $TEMP_DIR = "$PSScriptRoot\temp_frontend_sync"
+$ZIP_FILE = "$PSScriptRoot\frontend_deploy.zip"
 
-Write-Host "1. Cloning remote repository..."
+Write-Host "1. Preparing files..."
 if (Test-Path $TEMP_DIR) { Remove-Item -Recurse -Force $TEMP_DIR }
-git clone $REPO_URL $TEMP_DIR
+New-Item -ItemType Directory -Force -Path $TEMP_DIR | Out-Null
 
-Write-Host "2. Preparing files (Standalone Artifact)..."
-# Clean existing files (REMOVE EVERYTHING except .git to replace with artifact)
-Set-Location $TEMP_DIR
-git rm -rf .
-git clean -fdx
-Set-Location ..
-
+# Copy Standalone Artifacts
 Write-Host "Copying Standalone Artifacts..."
 # 1. Copy Standalone (Base Server)
-# This includes server.js, package.json, compiled server files, and node_modules
 robocopy "$SOURCE_DIR\.next\standalone" "$TEMP_DIR" /E /NFL /NDL /NJH /NJS
 if ($LASTEXITCODE -gt 7) { Write-Error "Robocopy failed (Standalone) with exit code $LASTEXITCODE" }
 
 # 2. Copy Static Assets (Required for images/styles/fonts)
-# Must be placed in .next/static inside the deployment root
 New-Item -ItemType Directory -Force -Path "$TEMP_DIR\.next\static" | Out-Null
 robocopy "$SOURCE_DIR\.next\static" "$TEMP_DIR\.next\static" /E /NFL /NDL /NJH /NJS
 if ($LASTEXITCODE -gt 7) { Write-Error "Robocopy failed (Static) with exit code $LASTEXITCODE" }
@@ -44,17 +32,26 @@ New-Item -ItemType Directory -Force -Path "$TEMP_DIR\public" | Out-Null
 robocopy "$SOURCE_DIR\public" "$TEMP_DIR\public" /E /NFL /NDL /NJH /NJS
 if ($LASTEXITCODE -gt 7) { Write-Error "Robocopy failed (Public) with exit code $LASTEXITCODE" }
 
-# Reset ErrorAction
-$ErrorActionPreference = "Stop"
+Write-Host "2. Zipping artifacts..."
+if (Test-Path $ZIP_FILE) { Remove-Item -Force $ZIP_FILE }
+Compress-Archive -Path "$TEMP_DIR\*" -DestinationPath $ZIP_FILE -Force
 
-Write-Host "3. Committing and Pushing Artifacts..."
-Set-Location $TEMP_DIR
-git add .
-git commit -m "Deploy Standalone Artifact (Local Build)"
-git push origin main
-Set-Location ..
+Write-Host "3. Uploading to Azure via Zip Deploy..."
+Write-Host "Target URL: $ZIP_DEPLOY_URL"
+
+# Create Basic Auth Header
+$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("${DEPLOY_USER}:${DEPLOY_PASS}")))
+
+try {
+    # Increase timeout to 5 minutes for large uploads
+    Invoke-RestMethod -Uri $ZIP_DEPLOY_URL -Headers @{Authorization = ("Basic {0}" -f $base64AuthInfo) } -Method Post -InFile $ZIP_FILE -ContentType "application/zip" -TimeoutSec 300
+    Write-Host "Done! Deployment initiated successfully."
+}
+catch {
+    Write-Error "Deployment failed: $_"
+}
 
 Write-Host "4. Cleanup..."
 Remove-Item -Recurse -Force $TEMP_DIR
-
-Write-Host "Done! Standalone artifact successfully pushed."
+Remove-Item -Force $ZIP_FILE
+Write-Host "Deployment script finished."
