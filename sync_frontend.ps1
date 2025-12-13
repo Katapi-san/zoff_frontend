@@ -5,8 +5,8 @@ $ErrorActionPreference = "Stop"
 $SOURCE_DIR = "$PSScriptRoot\apps\customer"
 # Azure Deployment Credentials (Fill these in!)
 # NOTE: Use single quotes '' to handle special characters like $ safely
-$DEPLOY_USER = 'REPLACE_WITH_VARIABLE_git_username'
-$DEPLOY_PASS = 'REPLACE_WITH_VARIABLE_password'
+$DEPLOY_USER = 'REDACTED'
+$DEPLOY_PASS = 'REDACTED'
 
 # Construct URL with credentials
 $REPO_URL = "https://${DEPLOY_USER}:${DEPLOY_PASS}@zoff-scope-frontend.scm.azurewebsites.net:443/zoff-scope-frontend.git"
