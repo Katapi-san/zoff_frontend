@@ -47,6 +47,7 @@ Write-Host "Updated package.json start script to 'node server.js'"
 Write-Host "4. Pushing to GitHub..."
 Set-Location $TEMP_DIR
 git add .
-git commit -m "Deploy Standalone Artifact (Mixed Content Fix)"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+git commit -m "Deploy Standalone Artifact (UI Update: Staff Profile & Search Tags) - $timestamp"
 git push origin main
 Write-Host "Done! Artifacts pushed to GitHub."
