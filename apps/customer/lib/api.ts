@@ -38,7 +38,7 @@ export async function fetchStores(prefecture?: string, city?: string): Promise<S
     if (prefecture) params.append("prefecture", prefecture);
     if (city) params.append("city", city);
     // Cache busting
-    params.append("_t", "FORCE_REDEPLOY_" + Date.now().toString());
+    params.append("_t", Date.now().toString());
 
     // Add trailing slash to prevent backend from redirecting to HTTP (307)
     const res = await fetch(`${API_BASE_URL}/stores/?${params.toString()}`, {
