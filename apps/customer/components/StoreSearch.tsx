@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Store, fetchStores, fetchStoreStaff, Staff } from "../lib/api";
-import { Star } from "lucide-react";
+import { Star, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getTagBadgeStyle } from "../lib/tagUtils";
 
 const REGION_MAPPING: { [key: string]: string[] } = {
     "北海道": ["北海道"],
@@ -129,10 +130,15 @@ export default function StoreSearch() {
                         <p className="text-gray-400 text-center py-8 bg-gray-50 rounded-xl">出勤スタッフ情報はありません</p>
                     ) : (
                         storeStaff.map(staff => (
-                            <div key={staff.id} className="border rounded-xl p-4 shadow-sm flex items-center justify-between bg-white">
+                            <div
+                                key={staff.id}
+                                onClick={() => router.push(`/staffs/${staff.id}`)}
+                                className="border rounded-xl p-4 shadow-sm flex items-center justify-between bg-white cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.99]"
+                            >
                                 <div className="flex items-center space-x-4">
-                                    <div className="relative">
-                                        <div className="w-14 h-14 bg-gray-200 rounded-full overflow-hidden border border-gray-100">
+                                    <div className="relative flex-shrink-0">
+                                        <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border border-gray-100">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             {staff.image_url ? (
                                                 <img src={staff.image_url} alt={staff.display_name || staff.name} className="w-full h-full object-cover" />
                                             ) : (
@@ -145,21 +151,20 @@ export default function StoreSearch() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-gray-800 text-lg">{staff.display_name || staff.name}</h3>
+                                        <p className="text-xs text-gray-500 mb-1.5">{staff.role || "スタッフ"}</p>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {staff.tags && staff.tags.slice(0, 3).map((t: any) => (
-                                                <span key={t.id} className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded font-bold">
+                                                <span key={t.id} className={`text-[10px] px-2 py-0.5 rounded-full border ${getTagBadgeStyle(t.id)}`}>
                                                     {t.name}
                                                 </span>
                                             ))}
+                                            {(staff.tags || []).length > 3 && (
+                                                <span className="text-[10px] text-gray-400 self-center">+{(staff.tags || []).length - 3}</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => router.push(`/reservation/staff/${staff.id}`)}
-                                    className="border border-blue-600 text-blue-600 px-4 py-1.5 rounded-full text-sm font-bold hover:bg-blue-50 transition-colors"
-                                >
-                                    詳細
-                                </button>
+                                <ChevronRight className="w-5 h-5 text-gray-300" />
                             </div>
                         ))
                     )}
