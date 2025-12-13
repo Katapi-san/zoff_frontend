@@ -3,7 +3,13 @@
 $ErrorActionPreference = "Stop"
 
 $SOURCE_DIR = "$PSScriptRoot\apps\customer"
-$REPO_URL = "https://github.com/Katapi-san/zoff_Frontend_v2.git"
+# Azure Deployment Credentials (Fill these in!)
+# NOTE: Use single quotes '' to handle special characters like $ safely
+$DEPLOY_USER = 'REPLACE_WITH_VARIABLE_git_username'
+$DEPLOY_PASS = 'REPLACE_WITH_VARIABLE_password'
+
+# Construct URL with credentials
+$REPO_URL = "https://${DEPLOY_USER}:${DEPLOY_PASS}@zoff-scope-frontend.scm.azurewebsites.net:443/zoff-scope-frontend.git"
 $TEMP_DIR = "$PSScriptRoot\temp_frontend_sync"
 
 Write-Host "1. Cloning remote repository..."
