@@ -32,6 +32,19 @@ New-Item -ItemType Directory -Force -Path "$TEMP_DIR\public" | Out-Null
 robocopy "$SOURCE_DIR\public" "$TEMP_DIR\public" /E /NFL /NDL /NJH /NJS
 if ($LASTEXITCODE -gt 7) { Write-Error "Robocopy failed (Public) with exit code $LASTEXITCODE" }
 
+# FIX START SCRIPT FOR STANDALONE
+Write-Host "Patching package.json start script..."
+$pkgJsonPath = "$TEMP_DIR\package.json"
+if (Test-Path $pkgJsonPath) {
+    $pkgJson = Get-Content $pkgJsonPath -Raw | ConvertFrom-Json
+    $pkgJson.scripts.start = "node server.js"
+    $pkgJson | ConvertTo-Json -Depth 10 | Set-Content $pkgJsonPath
+    Write-Host "Updated package.json start script to 'node server.js'"
+}
+else {
+    Write-Warning "package.json not found in temp dir!"
+}
+
 Write-Host "2. Zipping artifacts..."
 if (Test-Path $ZIP_FILE) { Remove-Item -Force $ZIP_FILE }
 # Zip the artifacts using tar to ensure POSIX paths (fixes rsync issues on Linux)

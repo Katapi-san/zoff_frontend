@@ -36,6 +36,13 @@ robocopy "$SOURCE_DIR\public" "$TEMP_DIR\public" /E /NFL /NDL /NJH /NJS
 Write-Host "Restoring .github folder to ensure workflow persists..."
 Start-Process -FilePath "git" -ArgumentList "checkout HEAD -- .github" -WorkingDirectory $TEMP_DIR -NoNewWindow -Wait
 
+# 3c. FIX START SCRIPT FOR STANDALONE
+$pkgJsonPath = "$TEMP_DIR\package.json"
+$pkgJson = Get-Content $pkgJsonPath -Raw | ConvertFrom-Json
+$pkgJson.scripts.start = "node server.js"
+$pkgJson | ConvertTo-Json -Depth 10 | Set-Content $pkgJsonPath
+Write-Host "Updated package.json start script to 'node server.js'"
+
 # 4. Commit and Push
 Write-Host "4. Pushing to GitHub..."
 Set-Location $TEMP_DIR
