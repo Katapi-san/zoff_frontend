@@ -34,7 +34,10 @@ if ($LASTEXITCODE -gt 7) { Write-Error "Robocopy failed (Public) with exit code 
 
 Write-Host "2. Zipping artifacts..."
 if (Test-Path $ZIP_FILE) { Remove-Item -Force $ZIP_FILE }
-Compress-Archive -Path "$TEMP_DIR\*" -DestinationPath $ZIP_FILE -Force
+# Zip the artifacts using tar to ensure POSIX paths (fixes rsync issues on Linux)
+Write-Host "Zipping artifacts using tar..."
+# -a: auto-detect suffix (zip), -c: create, -f: file, -C: change directory
+tar -a -c -f "$ZIP_FILE" -C "$TEMP_DIR" .
 
 Write-Host "3. Uploading to Azure via Zip Deploy..."
 Write-Host "Target URL: $ZIP_DEPLOY_URL"
