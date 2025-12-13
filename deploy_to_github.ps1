@@ -40,8 +40,9 @@ Start-Process -FilePath "git" -ArgumentList "checkout HEAD -- .github" -WorkingD
 $pkgJsonPath = "$TEMP_DIR\package.json"
 $pkgJson = Get-Content $pkgJsonPath -Raw | ConvertFrom-Json
 $pkgJson.scripts.start = "node server.js"
+$pkgJson.scripts.build = "echo 'Skipping build'"
 $pkgJson | ConvertTo-Json -Depth 10 | Set-Content $pkgJsonPath
-Write-Host "Updated package.json start script to 'node server.js'"
+Write-Host "Updated package.json start='node server.js', build='echo Skipping build'"
 
 # 4. Commit and Push
 Write-Host "4. Pushing to GitHub..."

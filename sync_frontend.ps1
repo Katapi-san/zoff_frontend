@@ -7,7 +7,7 @@ $DEPLOY_USER = '$zoff-scope-frontend'
 $DEPLOY_PASS = '2eTLRd9aco4QpLcH3rh3GhGR8DaMBtMSBRg3i4lzEtjQQ5X9Rd49XoXa6vN9'
 
 # API URL for Zip Deploy (isAsync=true is recommended for stability)
-$ZIP_DEPLOY_URL = "https://zoff-scope-frontend.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
+$ZIP_DEPLOY_URL = "https://zoff-scope-frontend.scm.azurewebsites.net/api/zipdeploy?isAsync=false"
 
 $TEMP_DIR = "$PSScriptRoot\temp_frontend_sync"
 $ZIP_FILE = "$PSScriptRoot\frontend_deploy.zip"
