@@ -1,5 +1,5 @@
-const envApiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-const API_BASE_URL = envApiUrl.replace("http://zoff-scope-backend.azurewebsites.net", "https://zoff-scope-backend.azurewebsites.net");
+// Hardcoded to ensure HTTPS is used and avoid Mixed Content errors
+const API_BASE_URL = "https://zoff-scope-backend.azurewebsites.net";
 
 export interface Tag {
     id: number;
