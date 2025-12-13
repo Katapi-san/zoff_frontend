@@ -6,8 +6,8 @@
 $DEPLOY_USER = "`$zoff-scope-backend"  # Default App Credentials User (Application Scope)
 $DEPLOY_PASS = "AqiyFiSPTfCoBTYAMph7hu9qoY2Qox83P3pWDy3neLminTcrTrrRNxo5qddL" # <--- PLEASE ENTER PASSWORD HERE
 
-# API URL for Zip Deploy (isAsync=true is recommended for stability)
-$ZIP_DEPLOY_URL = "https://zoff-scope-backend.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
+# API URL for Zip Deploy (Sync for debugging)
+$ZIP_DEPLOY_URL = "https://zoff-scope-backend.scm.azurewebsites.net/api/zipdeploy"
 
 $SOURCE_DIR = "$PSScriptRoot\backend"
 $TEMP_DIR = "$PSScriptRoot\temp_backend_deploy"
