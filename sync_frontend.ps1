@@ -5,8 +5,8 @@ $ErrorActionPreference = "Stop"
 $SOURCE_DIR = "$PSScriptRoot\apps\customer"
 # Azure Deployment Credentials (Fill these in!)
 # NOTE: Use single quotes '' to handle special characters like $ safely
-$DEPLOY_USER = 'REDACTED'
-$DEPLOY_PASS = 'REDACTED'
+$DEPLOY_USER = '$zoff-scope-frontend'
+$DEPLOY_PASS = '2eTLRd9aco4QpLcH3rh3GhGR8DaMBtMSBRg3i4lzEtjQQ5X9Rd49XoXa6vN9'
 
 # Encode credentials to handle special characters (like /, @, :) in URL
 $EncodedUser = [Uri]::EscapeDataString($DEPLOY_USER)
