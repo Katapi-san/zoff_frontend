@@ -45,19 +45,20 @@ export default function StaffProfilePage() {
             </div>
 
             {/* Hero Image Section */}
-            <div className="relative w-full aspect-[3/4] bg-gray-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={staff.image_url || "/images/staff/default.jpg"}
-                    alt={staff.display_name || staff.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
-                />
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
+            <div className="relative w-full bg-gray-50 pt-20 pb-4">
+                <div className="w-1/2 mx-auto aspect-[3/4] relative rounded-2xl overflow-hidden shadow-lg border-4 border-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={staff.image_url || "/images/staff/default.jpg"}
+                        alt={staff.display_name || staff.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
+                    />
+                </div>
             </div>
 
             {/* Profile Content */}
-            <div className="relative px-5 -mt-10">
+            <div className="relative px-5">
                 <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
                     {/* Name & Role */}
                     <div className="text-center mb-6">

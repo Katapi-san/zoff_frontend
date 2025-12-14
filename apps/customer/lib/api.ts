@@ -99,3 +99,15 @@ export async function fetchStaff(id: number | string): Promise<Staff> {
 
     return res.json();
 }
+
+export async function fetchStore(id: number | string): Promise<Store> {
+    const res = await fetch(`${API_BASE_URL}/stores/${id}`, {
+        cache: "no-store",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch store");
+    }
+
+    return res.json();
+}

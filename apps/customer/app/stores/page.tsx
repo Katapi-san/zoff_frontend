@@ -10,9 +10,6 @@ export default function StoresPage() {
             <main>
                 <StoreSearch />
             </main>
-            <footer className="text-center text-[10px] text-gray-300 py-2">
-                v20251213-1945-NOBUILD
-            </footer>
         </div>
     );
 }
