@@ -1,50 +1,44 @@
-"use client";
+'use client';
 
-import { ChevronRight } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
+import { ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function MemberPage() {
+    const router = useRouter();
+    // メンバーシップID（ダミー）
+    const memberId = "ZOFF-MEMBER-123456789";
+
     return (
-        <div className="min-h-screen bg-white pb-20">
-            <header className="bg-white border-b p-4 text-center sticky top-0 z-10">
-                <h1 className="text-lg font-bold text-blue-600">会員証</h1>
+        <div className="bg-gray-100 min-h-screen pb-20">
+            <header className="bg-blue-600 text-white p-4 text-center font-bold text-lg sticky top-0 z-10 flex items-center justify-center relative">
+                <button
+                    onClick={() => router.push('/')}
+                    className="absolute left-4 p-1 hover:bg-blue-700 rounded"
+                >
+                    <ChevronLeft className="w-6 h-6" />
+                </button>
+                Zoff Scope
             </header>
 
-            <div className="p-4 bg-gray-50 min-h-[calc(100vh-60px)]">
-                {/* Member Card */}
-                <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-lg mb-6 relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-8">
-                        <div>
-                            <p className="text-blue-100 text-sm mb-1">Zoff Scope Member</p>
-                            <h2 className="text-2xl font-bold tracking-wide">TARO YAMADA</h2>
-                        </div>
-                        <div className="border border-white/50 rounded-full px-3 py-1 text-xs">
-                            Regular
-                        </div>
+            <main className="p-6 max-w-md mx-auto">
+                <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">会員証</h1>
+
+                <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center">
+                    <div className="mb-2 text-gray-500 font-bold">Zoff Scope Member</div>
+                    <div className="mb-6 text-2xl font-bold text-[#00A0E9]">YAMADA TARO</div>
+
+                    <div className="bg-white p-4 border-4 border-gray-800 rounded-xl mb-6">
+                        <QRCodeSVG value={memberId} size={200} />
                     </div>
 
-                    <div className="bg-white rounded-lg p-4 text-center">
-                        <p className="text-gray-800 font-mono text-xl tracking-widest">1234 5678 9012</p>
-                    </div>
+                    <p className="text-gray-400 text-sm break-all font-mono">{memberId}</p>
+                    <p className="text-xs text-gray-400 mt-4 text-center">
+                        店舗でこの会員証をご提示ください。<br />
+                        ポイントやお買い上げ履歴が確認できます。
+                    </p>
                 </div>
-
-                {/* Menu List */}
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <MenuItem label="購入履歴" />
-                    <div className="border-t border-gray-100"></div>
-                    <MenuItem label="視力・処方箋データ" />
-                    <div className="border-t border-gray-100"></div>
-                    <MenuItem label="お気に入りスタッフ" />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function MenuItem({ label }: { label: string }) {
-    return (
-        <div className="flex justify-between items-center p-4 hover:bg-gray-50 cursor-pointer">
-            <span className="text-gray-800">{label}</span>
-            <ChevronRight className="w-5 h-5 text-gray-300" />
+            </main>
         </div>
     );
 }

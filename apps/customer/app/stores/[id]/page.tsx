@@ -87,7 +87,7 @@ export default function StoreDetailPage() {
                             <div
                                 key={staff.id}
                                 onClick={() => router.push(`/staffs/${staff.id}`)}
-                                className="border border-gray-100 rounded-xl p-4 shadow-sm flex items-center justify-between bg-white cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.99]"
+                                className="border border-[#00A0E9] rounded-xl p-4 shadow-sm flex items-center justify-between bg-white cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.99]"
                             >
                                 <div className="flex items-center space-x-4">
                                     <div className="relative flex-shrink-0">

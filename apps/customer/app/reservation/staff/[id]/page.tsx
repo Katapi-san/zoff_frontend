@@ -15,22 +15,6 @@ const MENU_ITEMS = [
     { id: 3, name: '調整・メンテナンス', duration: 15 },
 ];
 
-// Mock Date Data
-const DATES = [
-    { day: '火', date: 10 },
-    { day: '水', date: 11 },
-    { day: '木', date: 12 },
-    { day: '金', date: 13 },
-    { day: '土', date: 14 },
-    { day: '日', date: 15 },
-];
-
-// Mock Time Slots
-const TIME_SLOTS = [
-    "10:00", "11:00", "12:00", "13:00", "14:00",
-    "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
-];
-
 export default function StaffReservationPage() {
     const params = useParams(); // params.id
     const router = useRouter();
@@ -38,6 +22,23 @@ export default function StaffReservationPage() {
     const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
     const [selectedDate, setSelectedDate] = useState<number | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [dates, setDates] = useState<{ month: number; date: number; day: string }[]>([]);
+
+    useEffect(() => {
+        const list = [];
+        const today = new Date();
+        const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() + i);
+            list.push({
+                month: d.getMonth() + 1,
+                date: d.getDate(),
+                day: dayNames[d.getDay()]
+            });
+        }
+        setDates(list);
+    }, []);
 
     useEffect(() => {
         if (!params.id) return;
@@ -52,21 +53,62 @@ export default function StaffReservationPage() {
         loadStaff();
     }, [params.id]);
 
-    // Reset time when date changes
+    // Reset time when date or menu changes
     useEffect(() => {
         setSelectedTime(null);
-    }, [selectedDate]);
+    }, [selectedDate, selectedMenuId]);
 
     if (!staff) return <div className="p-10 text-center text-gray-500">読み込み中...</div>;
 
     const selectedMenu = MENU_ITEMS.find(m => m.id === selectedMenuId);
+    const selectedDateObj = dates.find(d => d.date === selectedDate);
+
+    // Dynamic Time Slot Generation
+    const timeSlots = (() => {
+        if (!selectedMenu) return [];
+        const slots = [];
+        let startHour = 10;
+        let startMinute = 0;
+        const endHour = 20;
+
+        // Generate slots from 10:00 to 19:xx depending on duration
+        // Last slot should allow finishing by 20:00 or similar business rule
+        // checking startHour < 20 is a safe bet for "Open until 20:00"
+        while (startHour < endHour) {
+            const timeString = `${startHour}:${startMinute.toString().padStart(2, '0')}`;
+            slots.push(timeString);
+
+            startMinute += selectedMenu.duration;
+            while (startMinute >= 60) {
+                startMinute -= 60;
+                startHour += 1;
+            }
+        }
+        return slots;
+    })();
+
+    const isTimeDisabled = (time: string) => {
+        if (!selectedDateObj) return false;
+        const now = new Date();
+        const isToday = selectedDateObj.date === now.getDate() && selectedDateObj.month === (now.getMonth() + 1);
+
+        if (!isToday) return false;
+
+        const [h, m] = time.split(':').map(Number);
+        const currentH = now.getHours();
+        const currentM = now.getMinutes();
+
+        if (h < currentH) return true;
+        if (h === currentH && m < currentM) return true;
+        return false;
+    };
 
     const handleReservation = () => {
-        if (!staff || !selectedDate || !selectedTime) return;
+        if (!staff || !selectedDate || !selectedTime || !selectedDateObj) return;
 
         const query = new URLSearchParams({
             staffName: staff.display_name || '',
-            date: selectedDate.toString(),
+            date: `${selectedDateObj.month}月${selectedDateObj.date}日`,
             time: selectedTime
         });
 
@@ -142,7 +184,7 @@ export default function StaffReservationPage() {
                         日時選択
                     </h3>
                     <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
-                        {DATES.map((d, i) => (
+                        {dates.map((d, i) => (
                             <button
                                 key={i}
                                 onClick={() => setSelectedDate(d.date)}
@@ -155,29 +197,36 @@ export default function StaffReservationPage() {
                                 <span className="text-2xl font-bold">{d.date}</span>
                             </button>
                         ))}
-                        <button className="flex-shrink-0 w-16 h-20 rounded-xl border border-gray-200 border-dashed text-gray-400 flex items-center justify-center text-2xl hover:bg-gray-50">
-                            +
-                        </button>
                     </div>
 
                     {/* Time Grid - Only show if date is selected */}
                     {selectedDate && (
                         <div className="mt-6 pt-6 border-t border-gray-100 animate-in fade-in slide-in-from-top-4 duration-300">
                             <h4 className="font-bold text-gray-700 mb-3 text-sm">時間を選択してください</h4>
-                            <div className="grid grid-cols-3 gap-3">
-                                {TIME_SLOTS.map((time) => (
-                                    <button
-                                        key={time}
-                                        onClick={() => setSelectedTime(time)}
-                                        className={`py-2 px-1 rounded-lg text-sm font-bold border transition-all ${selectedTime === time
-                                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-500'
-                                            }`}
-                                    >
-                                        {time}
-                                    </button>
-                                ))}
-                            </div>
+                            {!selectedMenu ? (
+                                <p className="text-red-500 text-sm">先にメニューを選択してください</p>
+                            ) : (
+                                <div className="grid grid-cols-3 gap-3">
+                                    {timeSlots.map((time) => {
+                                        const disabled = isTimeDisabled(time);
+                                        return (
+                                            <button
+                                                key={time}
+                                                disabled={disabled}
+                                                onClick={() => setSelectedTime(time)}
+                                                className={`py-2 px-1 rounded-lg text-sm font-bold border transition-all ${disabled
+                                                        ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
+                                                        : selectedTime === time
+                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-500'
+                                                    }`}
+                                            >
+                                                {time}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -188,7 +237,7 @@ export default function StaffReservationPage() {
                 <div className="max-w-md mx-auto flex items-center justify-between">
                     <div>
                         <div className="text-gray-500 text-sm font-medium">
-                            {selectedDate && selectedTime ? `12月${selectedDate}日(火) ${selectedTime}` : '日時未選択'}
+                            {selectedDateObj && selectedTime ? `${selectedDateObj.month}月${selectedDateObj.date}日(${selectedDateObj.day}) ${selectedTime}` : '日時未選択'}
                         </div>
                         <div className={`font-bold transition-all ${selectedMenu ? 'text-blue-600 text-md' : 'text-blue-500 text-sm animate-pulse'}`}>
                             {selectedMenu ? selectedMenu.name : 'メニューを選択してください'}

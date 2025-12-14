@@ -11,24 +11,29 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Override blue colors */
-  --color-blue-50: #e0f4ff;
-  --color-blue-100: #b3e0ff;
-  --color-blue-200: #80ccff;
-  --color-blue-300: #4db8ff;
-  --color-blue-400: #1aa3ff;
-  --color-blue-500: #009CE5;
-  --color-blue-600: #009CE5;
-  --color-blue-700: #007bb5;
-  --color-blue-800: #005a85;
-  --color-blue-900: #003954;
-  --color-blue-950: #001824;
+  /* Override blue colors to Zoff Corporate Blue #00A0E9 */
+  --color-blue-50: #e5f6fd;
+  --color-blue-100: #bae6fa;
+  --color-blue-200: #7dd3f7;
+  --color-blue-300: #3dbbf2;
+  --color-blue-400: #1aa3ff; /* kept */
+  --color-blue-500: #00A0E9; /* Zoff Primary */
+  --color-blue-600: #008dcd;
+  --color-blue-700: #0071a6;
+  --color-blue-800: #005f88;
+  --color-blue-900: #0c4e6e;
+  --color-blue-950: #083249;
 
   /* Zoff Brand Colors */
-  --color-zoff-blue: #009CE5;
+  --color-zoff-blue: #00A0E9;
   --color-zoff-orange: #FF9200;
   --color-zoff-green: #5CC035;
   --color-zoff-purple: #B44C99;
+
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @media (prefers-color-scheme: dark) {

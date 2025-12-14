@@ -1,167 +1,49 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Camera, X } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import Link from 'next/link';
+import { Camera, CreditCard, ShoppingBag, UserCog, Search, MapPin } from 'lucide-react';
 
 export default function Home() {
-  const router = useRouter();
-  const [isScanning, setIsScanning] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-
-  // デモ用URL（固定）
-  const demoUrl = "https://zoff-scope-frontend.azurewebsites.net/stores/1";
-
-  useEffect(() => {
-    // コンポーネントのアンマウント時にクリーンアップ
-    return () => {
-      if (scannerRef.current) {
-        try {
-          if (scannerRef.current.isScanning) {
-            try {
-              // @ts-ignore
-              scannerRef.current.stop();
-            } catch (ignore) { }
-          }
-          try {
-            // @ts-ignore
-            scannerRef.current.clear();
-          } catch (ignore) { }
-        } catch (e) {
-          // 同期エラーもキャッチ
-          console.error(e);
-        }
-      }
-    };
-  }, []);
-
-  const startScan = async () => {
-    setIsScanning(true);
-
-    // 要素が表示されるのを少しだけ待つ（Reactのレンダリング待ち）
-    // iOSでもPromise内でのユーザーアクション起因とみなされる範囲内であることを期待
-    await new Promise(r => setTimeout(r, 100));
-
-    try {
-      const html5QrCode = new Html5Qrcode("reader");
-      scannerRef.current = html5QrCode;
-
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-          disableFlip: false,
-        },
-        onScanSuccess,
-        onScanFailure
-      );
-    } catch (err) {
-      console.error("Failed to start scanner", err);
-      setIsScanning(false);
-      alert("カメラの起動に失敗しました。ブラウザのカメラ権限設定を確認してください。\n" + err);
-    }
-  };
-
-  const stopScan = async () => {
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop();
-        }
-        // clear() はDOMを削除してしまうことがあるため、stop()だけに留めるか注意が必要だが
-        // 次回new Html5Qrcodeするときのためにclearもしておく
-        await scannerRef.current.clear();
-      } catch (error) {
-        console.error("Failed to stop scanner", error);
-      }
-    }
-    setIsScanning(false);
-  };
-
-  const onScanSuccess = (decodedText: string, decodedResult: any) => {
-    console.log(`Code matched = ${decodedText}`, decodedResult);
-
-    // スキャン成功したら即停止
-    stopScan().then(() => {
-      if (decodedText.includes('/stores/')) {
-        try {
-          const url = new URL(decodedText);
-          const path = decodedText.split('azurewebsites.net')[1] || url.pathname;
-          router.push(url.pathname);
-        } catch (e) {
-          if (decodedText.startsWith('/')) {
-            router.push(decodedText);
-          } else {
-            window.location.href = decodedText;
-          }
-        }
-      } else {
-        alert(`読み取ったQRコード: ${decodedText}\n店舗のQRコードではありません。`);
-      }
-    });
-  };
-
-  const onScanFailure = (error: any) => {
-    // console.warn(`Code scan error = ${error}`);
-  };
+  const menuItems = [
+    { name: 'チェックイン', icon: <Camera className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '/checkin' },
+    { name: '会員証', icon: <CreditCard className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '/member' }, // Placeholder
+    { name: '店舗検索', icon: <MapPin className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '/stores' },
+    { name: 'スタッフ検索', icon: <Search className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '/staffs' }, // Assuming staffs listing page is here
+    { name: '購入履歴', icon: <ShoppingBag className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '#' }, // Placeholder
+    { name: '登録情報編集', icon: <UserCog className="w-10 h-10 mb-2 text-[#00A0E9]" />, href: '#' }, // Placeholder
+  ];
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-20">
+    <div className="bg-gray-50 min-h-screen pb-20 font-sans">
       <header className="bg-blue-600 text-white p-4 text-center font-bold text-lg sticky top-0 z-10">
-        Zoff Scope
+        ホーム
       </header>
 
-      <main className="p-4 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">お店にチェックイン</h1>
-
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-6 border border-gray-100 min-h-[400px] relative overflow-hidden">
-          {/* スキャナー領域（常に存在させるが、isScanningでないときは隠す、またはz-indexで背面に） */}
-          {/* html5-qrcodeは要素の中身を空にするため、条件付きレンダリングだと要素がないと言われるリスクがある */}
-          {/* しかしnew Html5Qrcode時に要素が必要なので、今回は条件付きレンダリング＋setTimeoutで対応している */}
-
-          {!isScanning ? (
-            <div
-              onClick={startScan}
-              className="absolute inset-0 m-6 flex flex-col items-center justify-center bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors group z-10"
-            >
-              <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
-                <Camera className="w-10 h-10 text-white" />
-              </div>
-              <p className="text-blue-600 font-bold text-lg">QRコードをスキャン</p>
-              <p className="text-blue-400 text-sm">(タップしてカメラ起動)</p>
-            </div>
-          ) : (
-            <button
-              onClick={stopScan}
-              className="absolute top-8 right-8 z-20 bg-white/80 p-2 rounded-full shadow-md hover:bg-white"
-            >
-              <X className="w-6 h-6 text-gray-700" />
-            </button>
-          )}
-
-          {/* リーダー本体 */}
-          <div id="reader" className={`w-full h-full rounded-xl overflow-hidden bg-black ${!isScanning ? 'invisible' : ''}`}></div>
-
-          {isScanning && (
-            <p className="text-center text-xs text-gray-400 mt-2 absolute bottom-8 left-0 right-0 z-10 pointer-events-none">
-              QRコードを枠内に合わせてください
-            </p>
-          )}
+      <main className="p-4 max-w-md mx-auto pt-10">
+        {/* Logo Section */}
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-bold text-gray-800 tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Zoff Scope <span className="block text-4xl mt-2 font-normal">Studio</span>
+          </h1>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-          <h2 className="text-lg font-bold text-gray-800 mb-2">デモ用QRコード</h2>
-          <p className="text-gray-500 text-sm mb-4">
-            このQRコードをスキャンすると<br />店舗情報の動作確認ができます。
-          </p>
-          <div className="flex justify-center mb-2 bg-gray-50 p-4 rounded-xl border border-dotted border-gray-300 inline-block">
-            <QRCodeSVG value={demoUrl} size={150} />
-          </div>
-          <p className="text-xs text-blue-500 break-all font-mono mt-2">{demoUrl}</p>
+        {/* My Page Title */}
+        <div className="text-center mb-6">
+          <h2 className="text-[#00A0E9] font-bold text-xl">マイページ</h2>
+        </div>
+
+        {/* Menu Grid */}
+        <div className="grid grid-cols-3 gap-4">
+          {menuItems.map((item, index) => (
+            <Link
+              key={index}
+              href={item.href}
+              className="bg-white flex flex-col items-center justify-center p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow aspect-square active:scale-95"
+            >
+              {item.icon}
+              <span className="text-xs font-bold text-[#00A0E9] text-center">{item.name}</span>
+            </Link>
+          ))}
         </div>
       </main>
     </div>

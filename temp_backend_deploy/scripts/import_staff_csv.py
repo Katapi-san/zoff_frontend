@@ -18,15 +18,71 @@ def import_staff_from_csv(csv_file_path):
     def get_tag_if_exists(tag_name):
         return existing_tags.get(tag_name)
 
+
+
     def get_store_id(name_part):
         if not name_part:
+            # Default to first store if no shop name provided
             return db.query(Store).first().id
             
-        print(f"Searching for store: '{name_part}'")
+
+        # Manual mappings for known CSV inconsistencies
+        manual_map = {
+            "サクラマチクマモト店": "サクラマチ クマモト店"
+        }
+        if name_part in manual_map:
+            name_part = manual_map[name_part]
+        elif "サクラマチ" in name_part:
+            name_part = "サクラマチ クマモト店"
+
+        # 1. Try exact match (approximate with like for safety)
         store = db.query(Store).filter(Store.name.like(f"%{name_part}%")).first()
         if store:
             return store.id
-        print(f"Warning: Store matching '{name_part}' not found. Using first available store.")
+
+        # Special handling for "本社" (Headquarters)
+        if name_part == "本社":
+            # Check if exists
+            hq = db.query(Store).filter(Store.name == "本社").first()
+            if not hq:
+                print("Creating '本社' store...")
+                hq = Store(
+                    name="本社", 
+                    prefecture="東京都", 
+                    city="港区", 
+                    address="北青山3-6-1", # Dummy or real Zoff HQ address
+                    opening_hours="9:30 - 18:30",
+                    phone_number="",
+                    remarks="Headquarters"
+                )
+                db.add(hq)
+                db.commit()
+                db.refresh(hq)
+            return hq.id
+
+        # 2. Try variations
+        variations = [
+            name_part.replace('ウィ', 'ウイ'),
+            name_part.replace('ウイ', 'ウィ'),
+            name_part.replace('ヴェ', 'ベ'),
+            name_part.replace('ヴァ', 'バ'),
+            # Handle generic "Zoff" prefix if it was in CSV but not in DB
+            name_part.replace('Zoff ', ''), 
+             # Handle "Marche " prefix if in DB but not CSV
+             # But we are searching DB with LIKE, so "StoreName" matches "Marche StoreName".
+             # The reverse: CSV has "Marche StoreName" and DB has "StoreName".
+             name_part.replace('Marche ', ''),
+             name_part.replace('Marché ', ''),
+        ]
+        
+        for v in variations:
+            if v == name_part: continue
+            store = db.query(Store).filter(Store.name.like(f"%{v}%")).first()
+            if store:
+                print(f"  Matched '{name_part}' to '{store.name}' using variation '{v}'")
+                return store.id
+
+        print(f"ERROR: Store matching '{name_part}' not found. Using first available store.")
         return db.query(Store).first().id
 
     try:
@@ -108,8 +164,9 @@ def import_staff_from_csv(csv_file_path):
                 # Remove duplicates
                 tags_list = list(set(tags_list))
 
+
                 # Get Store ID
-                store_query = row.get('Shop', '')
+                store_query = row.get('Shop', '').strip()
                 store_id = get_store_id(store_query)
                 
                 # Image Path construction

@@ -33,9 +33,9 @@ export default function StaffProfilePage() {
     if (!staff) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">スタッフが見つかりません</div>;
 
     return (
-        <main className="min-h-screen bg-gray-50 pb-24 font-sans text-gray-800">
+        <main className="min-h-screen bg-gray-50 pb-40 font-sans text-gray-800">
             {/* Header / Navigation */}
-            <div className="fixed top-0 left-0 right-0 z-20 flex justify-between items-center p-4 bg-transparent via-transparent to-transparent">
+            <div className="fixed top-0 left-0 right-0 z-20 flex items-center p-4 bg-transparent via-transparent to-transparent">
                 <button
                     onClick={() => router.back()}
                     className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-colors"
@@ -46,7 +46,7 @@ export default function StaffProfilePage() {
 
             {/* Hero Image Section */}
             <div className="relative w-full bg-gray-50 pt-20 pb-4">
-                <div className="w-1/2 mx-auto aspect-[3/4] relative rounded-2xl overflow-hidden shadow-lg border-4 border-white">
+                <div className="w-1/2 md:w-1/4 mx-auto aspect-[3/4] relative rounded-2xl overflow-hidden shadow-lg border-4 border-white">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={staff.image_url || "/images/staff/default.jpg"}
@@ -111,8 +111,8 @@ export default function StaffProfilePage() {
                 </div>
             </div>
 
-            {/* Fixed Bottom Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            {/* Fixed Bottom Button - Raised to bottom-16 to clear BottomNav */}
+            <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/90 backdrop-blur-sm border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-40">
                 <Link
                     href={`/reservation/staff/${staff.id}`}
                     className="block w-full max-w-md mx-auto bg-[#00A0E9] text-white font-bold py-4 rounded-xl text-center shadow-lg shadow-blue-200 hover:bg-[#008bc9] transition-all active:scale-[0.98]"

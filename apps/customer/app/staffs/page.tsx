@@ -4,14 +4,17 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Staff, Tag, fetchAllStaff, fetchTags } from '../../lib/api';
-import { getTagStyle, getTagBadgeStyle, getTagTitleColor } from '../../lib/tagUtils';
-import { Star, ChevronRight } from 'lucide-react';
+import { getTagStyle, getTagBadgeStyle } from '../../lib/tagUtils';
+import { Star, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function StaffList() {
     const router = useRouter();
     const [staffs, setStaffs] = useState<Staff[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+
+    // State to track expanded categories
+    const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +44,10 @@ export default function StaffList() {
         );
     };
 
+    const toggleCategory = (categoryId: number) => {
+        setExpandedCategory(prev => prev === categoryId ? null : categoryId);
+    };
+
     // Filter logic: AND (Narrow down) - Staff must have ALL selected tags
     const filteredStaffs = staffs.filter(staff => {
         if (selectedTagIds.length === 0) return true;
@@ -49,27 +56,12 @@ export default function StaffList() {
     });
 
     // Group Tags
-    const technicalTags = tags.filter(t => t.id >= 1 && t.id <= 50);
-    const proposalTags = tags.filter(t => t.id >= 51 && t.id <= 100);
-    const sceneTags = tags.filter(t => t.id >= 101 && t.id <= 200);
-    const hobbyTags = tags.filter(t => t.id >= 201);
-
-    const renderTagSection = (title: string, tags: Tag[], titleId: number) => (
-        <div>
-            <h3 className={`font-bold mb-2 ${getTagTitleColor(titleId)}`}>{title}</h3>
-            <div className="flex flex-wrap gap-2">
-                {tags.map(tag => (
-                    <button
-                        key={tag.id}
-                        onClick={() => toggleTag(tag.id)}
-                        className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${getTagStyle(tag.id, selectedTagIds.includes(tag.id))}`}
-                    >
-                        {tag.name}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
+    const categories = [
+        { id: 1, title: "技術スキルで選ぶ", tags: tags.filter(t => t.id >= 1 && t.id <= 50), color: "text-blue-600", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
+        { id: 2, title: "提案・スタイルで選ぶ", tags: tags.filter(t => t.id >= 51 && t.id <= 100), color: "text-orange-600", bgColor: "bg-orange-50", borderColor: "border-orange-200" },
+        { id: 3, title: "シーン・用途で選ぶ", tags: tags.filter(t => t.id >= 101 && t.id <= 200), color: "text-green-600", bgColor: "bg-green-50", borderColor: "border-green-200" },
+        { id: 4, title: "趣味・カルチャーで選ぶ", tags: tags.filter(t => t.id >= 201), color: "text-purple-600", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
+    ];
 
     return (
         <main className="min-h-screen bg-gray-50 pb-10">
@@ -86,17 +78,64 @@ export default function StaffList() {
                     <span className="mr-2">🔍</span> スタッフをタグで探す
                 </h2>
 
-                {/* Tag Filters */}
-                <div className="mb-8 space-y-6">
-                    {renderTagSection("技術スキルで選ぶ", technicalTags, 1)}
-                    {renderTagSection("提案・スタイルで選ぶ", proposalTags, 51)}
-                    {renderTagSection("シーン・用途で選ぶ", sceneTags, 101)}
-                    {renderTagSection("趣味・カルチャーで選ぶ", hobbyTags, 201)}
+                {/* Categories */}
+                <div className="mb-6 space-y-3">
+                    {categories.map(cat => {
+                        const isExpanded = expandedCategory === cat.id;
+                        const activeCount = cat.tags.filter(t => selectedTagIds.includes(t.id)).length;
+
+                        return (
+                            <div key={cat.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                                <button
+                                    onClick={() => toggleCategory(cat.id)}
+                                    className={`w-full flex items-center justify-between p-4 ${isExpanded ? cat.bgColor : 'bg-white hover:bg-gray-50'} transition-colors`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className={`font-bold ${cat.color}`}>{cat.title}</span>
+                                        {activeCount > 0 && (
+                                            <span className="bg-gray-800 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                                {activeCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {isExpanded ? (
+                                        <ChevronUp className={`w-5 h-5 ${cat.color}`} />
+                                    ) : (
+                                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                                    )}
+                                </button>
+
+                                {isExpanded && (
+                                    <div className={`p-4 border-t ${cat.borderColor} bg-white animate-in slide-in-from-top-2 duration-200`}>
+                                        <div className="flex flex-wrap gap-2">
+                                            {cat.tags.map(tag => (
+                                                <button
+                                                    key={tag.id}
+                                                    onClick={() => toggleTag(tag.id)}
+                                                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${getTagStyle(tag.id, selectedTagIds.includes(tag.id))}`}
+                                                >
+                                                    {tag.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
 
-                <div className="mb-2 text-gray-600 text-sm">
+                <div className="mb-4 text-gray-600 text-sm flex justify-between items-center">
                     {selectedTagIds.length > 0 ? (
-                        <p>{filteredStaffs.length} 名のスタッフが見つかりました</p>
+                        <>
+                            <p>{filteredStaffs.length} 名のスタッフが見つかりました</p>
+                            <button
+                                onClick={() => setSelectedTagIds([])}
+                                className="text-xs text-red-500 underline"
+                            >
+                                選択をクリア
+                            </button>
+                        </>
                     ) : (
                         <p>全スタッフ表示中</p>
                     )}
@@ -138,7 +177,7 @@ export default function StaffList() {
                                         <div className="flex flex-wrap gap-1">
                                             {(staff.tags || []).slice(0, 3).map(tag => (
                                                 <span key={tag.id} className={`text-[10px] px-2 py-0.5 rounded-full border ${getTagBadgeStyle(tag.id)}`}>
-                                                    #{tag.name}
+                                                    {tag.name}
                                                 </span>
                                             ))}
                                             {(staff.tags || []).length > 3 && (
