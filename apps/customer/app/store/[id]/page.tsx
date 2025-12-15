@@ -27,12 +27,14 @@ export default function StoreDashboard() {
     }, [params.id]);
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
-            <header className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm">
+
+        <div className="min-h-screen bg-slate-100 font-sans text-gray-800">
+            <header className="bg-slate-800 border-b border-gray-700 p-4 sticky top-0 z-10 flex justify-between items-center shadow-lg">
+
                 <div className="flex items-center gap-2">
-                    <Link href="/store" className="text-gray-500 hover:text-blue-600 font-bold text-sm">← 店舗選択</Link>
-                    <span className="text-gray-300">|</span>
-                    <h1 className="text-lg font-bold text-gray-800">店舗ダッシュボード</h1>
+                    <Link href="/store" className="text-gray-400 hover:text-white font-bold text-sm transition-colors">← 店舗選択</Link>
+                    <span className="text-gray-600">|</span>
+                    <h1 className="text-lg font-bold text-white tracking-wide">店舗ダッシュボード (v5)</h1>
                 </div>
             </header>
 
@@ -87,8 +89,9 @@ export default function StoreDashboard() {
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">
+
                                     <h3 className="font-bold text-gray-800 truncate">{staff.display_name}</h3>
-                                    <p className="text-xs text-gray-500 mb-1">{staff.roles ? staff.roles.join(', ') : 'Staff'}</p>
+                                    <p className="text-xs text-gray-500 mb-1">{staff.role || 'Staff'}</p>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                         {/* Mock Tags matching image */}
                                         <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200">#フィッティング</span>

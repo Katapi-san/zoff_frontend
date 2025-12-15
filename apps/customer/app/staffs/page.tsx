@@ -145,48 +145,52 @@ export default function StaffList() {
                 {filteredStaffs.length > 0 ? (
                     <div className="space-y-4">
                         {filteredStaffs.map((staff) => (
+
                             <div
                                 key={staff.id}
                                 onClick={() => router.push(`/staffs/${staff.id}`)}
-                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.99]"
+                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors active:scale-[0.99]"
                             >
-                                <div className="flex items-center space-x-4">
-                                    <div className="relative flex-shrink-0">
-                                        <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border border-gray-100">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={staff.image_url || "/images/staff/default.jpg"}
-                                                alt={staff.display_name || staff.name}
-                                                className="object-cover w-full h-full"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = "/globe.svg";
-                                                }}
-                                            />
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="relative flex-shrink-0">
+                                            <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border border-gray-100">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={staff.image_url || "/images/staff/default.jpg"}
+                                                    alt={staff.display_name || staff.name}
+                                                    className="object-cover w-full h-full"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = "/globe.svg";
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="absolute -bottom-1 -right-1 bg-yellow-400 rounded-full p-1 border-2 border-white shadow-sm">
+                                                <Star className="w-3 h-3 text-white fill-current" />
+                                            </div>
                                         </div>
-                                        <div className="absolute -bottom-1 -right-1 bg-yellow-400 rounded-full p-1 border-2 border-white shadow-sm">
-                                            <Star className="w-3 h-3 text-white fill-current" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h2 className="font-bold text-gray-800 text-lg">{staff.display_name || staff.name}</h2>
-                                            <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">Zoff {staff.store?.name}</span>
-                                        </div>
-                                        <p className="text-xs text-gray-500 mb-1.5">{staff.role || "スタッフ"}</p>
-
-                                        <div className="flex flex-wrap gap-1">
-                                            {(staff.tags || []).slice(0, 3).map(tag => (
-                                                <span key={tag.id} className={`text-[10px] px-2 py-0.5 rounded-full border ${getTagBadgeStyle(tag.id)}`}>
-                                                    {tag.name}
-                                                </span>
-                                            ))}
-                                            {(staff.tags || []).length > 3 && (
-                                                <span className="text-[10px] text-gray-400 self-center">+{(staff.tags || []).length - 3}</span>
-                                            )}
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h2 className="font-bold text-gray-800 text-lg">{staff.display_name || staff.name}</h2>
+                                                <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">Zoff {staff.store?.name}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500">{staff.role || "スタッフ"}</p>
                                         </div>
                                     </div>
+                                    <ChevronRight className="w-5 h-5 text-gray-300" />
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-gray-300" />
+
+                                {/* Tag Area: Independent Row */}
+                                <div className="flex flex-wrap gap-1.5 pl-1">
+                                    {(staff.tags || []).slice(0, 10).map(tag => (
+                                        <span key={tag.id} className={`text-[10px] px-2.5 py-1 rounded-full border ${getTagBadgeStyle(tag.id)}`}>
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                    {(staff.tags || []).length > 10 && (
+                                        <span className="text-[10px] text-gray-400 self-center">+{(staff.tags || []).length - 10}</span>
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>
