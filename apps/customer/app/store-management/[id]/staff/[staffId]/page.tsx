@@ -104,7 +104,7 @@ export default function StaffMyPage() {
             {/* Header */}
             <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
-                    <Link href={`/store/${params.id}`} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+                    <Link href={`/store-management/${params.id}`} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
                         <ChevronLeft size={24} />
                     </Link>
                     <h1 className="text-lg font-bold text-gray-800">My Page</h1>

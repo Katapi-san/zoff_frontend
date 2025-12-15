@@ -32,7 +32,7 @@ export default function StoreDashboard() {
             <header className="bg-slate-800 border-b border-gray-700 p-4 sticky top-0 z-10 flex justify-between items-center shadow-lg">
 
                 <div className="flex items-center gap-2">
-                    <Link href="/store" className="text-gray-400 hover:text-white font-bold text-sm transition-colors">← 店舗選択</Link>
+                    <Link href="/store-management" className="text-gray-400 hover:text-white font-bold text-sm transition-colors">← 店舗選択</Link>
                     <span className="text-gray-600">|</span>
                     <h1 className="text-lg font-bold text-white tracking-wide">店舗ダッシュボード (v5)</h1>
                 </div>
@@ -42,7 +42,7 @@ export default function StoreDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {/* Service Mode Card */}
                     <Link
-                        href={`/store/${params.id}/service`}
+                        href={`/store-management/${params.id}/service`}
                         className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex flex-col justify-between h-48"
                     >
                         <div>
@@ -76,7 +76,7 @@ export default function StoreDashboard() {
                         {staffList.map(staff => (
                             <Link
                                 key={staff.id}
-                                href={`/store/${params.id}/staff/${staff.id}`}
+                                href={`/store-management/${params.id}/staff/${staff.id}`}
                                 className="bg-white p-4 rounded-xl border border-[#00A0E9] shadow-sm hover:shadow-md transition-all flex items-center gap-4 group"
                             >
                                 <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">

@@ -65,7 +65,8 @@ export async function fetchStoreStaff(storeId: number): Promise<Staff[]> {
 }
 
 export async function fetchAllStaff(): Promise<Staff[]> {
-    const res = await fetch(`${API_BASE_URL}/staffs/`, {
+    // Adding limit=1000 to ensure we search across ALL staff, not just the first page
+    const res = await fetch(`${API_BASE_URL}/staffs/?limit=1000`, {
         cache: "no-store",
     });
 

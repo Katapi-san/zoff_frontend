@@ -8,8 +8,10 @@ export default function BottomNav() {
 
     const pathname = usePathname();
 
-    // Hide on store pages which have their own nav
-    if (pathname?.startsWith('/store')) return null;
+
+    // Hide on store DASHBOARD pages (singular /store-management), but keep on customer store pages (plural /stores)
+    const isStoreDashboard = pathname?.startsWith('/store-management');
+    if (isStoreDashboard) return null;
 
     const isActive = (path: string) => pathname === path;
 
@@ -59,8 +61,10 @@ export function StoreBottomNav() {
     const pathname = usePathname();
     const isActive = (path: string) => pathname?.includes(path);
 
-    // Only show on store pages
-    if (!pathname?.startsWith('/store')) return null;
+
+    // Only show on store DASHBOARD pages (singular /store-management)
+    const isStoreDashboard = pathname?.startsWith('/store-management');
+    if (!isStoreDashboard) return null;
 
     return (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50 text-white">

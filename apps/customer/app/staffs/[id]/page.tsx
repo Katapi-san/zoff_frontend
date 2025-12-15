@@ -44,35 +44,46 @@ export default function StaffProfilePage() {
                 </button>
             </div>
 
-            {/* Hero Image Section */}
-            <div className="relative w-full bg-gray-50 pt-20 pb-4">
-                <div className="w-1/2 md:w-1/4 mx-auto aspect-[3/4] relative rounded-2xl overflow-hidden shadow-lg border-4 border-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={staff.image_url || "/images/staff/default.jpg"}
-                        alt={staff.display_name || staff.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
-                    />
-                </div>
-            </div>
 
-            {/* Profile Content */}
-            <div className="relative px-5">
-                <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
-                    {/* Name & Role */}
-                    <div className="text-center mb-6">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                            <h1 className="text-2xl font-bold text-gray-900">{staff.display_name || staff.name}</h1>
+            {/* New Compact Header Section */}
+            <div className="pt-20 px-5 pb-6 bg-white border-b border-gray-100">
+                <div className="flex gap-4">
+                    {/* Left: Photo */}
+                    <div className="shrink-0 w-20 h-28 rounded-lg overflow-hidden shadow-md border border-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={staff.image_url || "/images/staff/default.jpg"}
+                            alt={staff.display_name || staff.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
+                        />
+                    </div>
+
+                    {/* Right: Info */}
+                    <div className="flex-1 flex flex-col justify-center">
+                        <div className="flex items-center gap-2 mb-1">
+                            <h1 className="text-xl font-bold text-gray-900">{staff.display_name || staff.name}</h1>
                             <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border border-yellow-200">
                                 <Star className="w-3 h-3 fill-current" /> 95
                             </span>
                         </div>
-                        <p className="text-sm text-gray-500 font-medium tracking-wide">スタッフ</p>
-                        <p className="text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
+                        <p className="text-sm text-gray-500 font-medium tracking-wide mb-1">スタッフ</p>
+                        <p className="text-xs text-gray-400 flex items-center gap-1">
                             <MapPin className="w-3 h-3" /> Zoff {staff.store?.name}
                         </p>
+
+                        {/* Social / Extra Info Placeholders like reference */}
+                        <div className="flex gap-2 mt-3">
+                            <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded"># {staff.role || "販売スタッフ"}</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Profile Content Body */}
+            <div className="relative px-5 pt-6">
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 justify-center mb-8">
