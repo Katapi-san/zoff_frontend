@@ -106,15 +106,16 @@ export default function StaffProfilePage() {
                                 <BadgeCheck className="w-5 h-5 text-[#00A0E9] shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-bold text-gray-700 mb-1">基本情報</p>
-                                    <p>神奈川県出身 | 販売歴6年目</p>
+                                    <p>{staff.name === 'とんとん' ? '東京都出身' : '神奈川県出身 | 販売歴6年目'}</p>
                                 </div>
                             </div>
 
                             <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-gray-700">
-                                <p>
-                                    「メガネ選びをもっと楽しく、ハッピーに！」をモットーに接客しています。
+                                <p className="whitespace-pre-wrap">
+                                    {staff.introduction ||
+                                        `「メガネ選びをもっと楽しく、ハッピーに！」をモットーに接客しています。
                                     似合うメガネがわからない、という方はぜひご相談ください。
-                                    顔タイプ診断やパーソナルカラーに基づいた提案が得意です👓✨
+                                    顔タイプ診断やパーソナルカラーに基づいた提案が得意です👓✨`}
                                 </p>
                             </div>
                         </div>

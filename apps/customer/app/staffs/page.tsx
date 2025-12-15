@@ -48,11 +48,26 @@ export default function StaffList() {
         setExpandedCategory(prev => prev === categoryId ? null : categoryId);
     };
 
-    // Filter logic: AND (Narrow down) - Staff must have ALL selected tags
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Filter logic: AND (Narrow down) - Staff must have ALL selected tags AND match Name
     const filteredStaffs = staffs.filter(staff => {
-        if (selectedTagIds.length === 0) return true;
-        const staffTagIds = (staff.tags || []).map(t => t.id);
-        return selectedTagIds.every(id => staffTagIds.includes(id));
+        // Tag Filter
+        if (selectedTagIds.length > 0) {
+            const staffTagIds = (staff.tags || []).map(t => t.id);
+            if (!selectedTagIds.every(id => staffTagIds.includes(id))) return false;
+        }
+
+        // Name Search Filter
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            const name = (staff.name || "").toLowerCase();
+            const disp = (staff.display_name || "").toLowerCase();
+            const store = (staff.store?.name || "").toLowerCase();
+            return name.includes(term) || disp.includes(term) || store.includes(term);
+        }
+
+        return true;
     });
 
     // Group Tags
@@ -77,6 +92,17 @@ export default function StaffList() {
                 <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                     <span className="mr-2">🔍</span> スタッフをタグで探す
                 </h2>
+
+                {/* Search Input */}
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        placeholder="スタッフ名・店舗名で検索..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00A0E9] shadow-sm transition-shadow"
+                    />
+                </div>
 
                 {/* Categories */}
                 <div className="mb-6 space-y-3">
@@ -126,18 +152,14 @@ export default function StaffList() {
                 </div>
 
                 <div className="mb-4 text-gray-600 text-sm flex justify-between items-center">
-                    {selectedTagIds.length > 0 ? (
-                        <>
-                            <p>{filteredStaffs.length} 名のスタッフが見つかりました</p>
-                            <button
-                                onClick={() => setSelectedTagIds([])}
-                                className="text-xs text-red-500 underline"
-                            >
-                                選択をクリア
-                            </button>
-                        </>
-                    ) : (
-                        <p>全スタッフ表示中</p>
+                    <p>{filteredStaffs.length} 名のスタッフが見つかりました</p>
+                    {(selectedTagIds.length > 0 || searchTerm) && (
+                        <button
+                            onClick={() => { setSelectedTagIds([]); setSearchTerm(""); }}
+                            className="text-xs text-red-500 underline"
+                        >
+                            条件をクリア
+                        </button>
                     )}
                 </div>
 
