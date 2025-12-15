@@ -28,9 +28,22 @@ robocopy "$SOURCE_DIR\.next\standalone" "$TEMP_DIR" /E /NFL /NDL /NJH /NJS
 # Copy .next/static to .next/static
 New-Item -ItemType Directory -Path "$TEMP_DIR\.next\static" -Force | Out-Null
 robocopy "$SOURCE_DIR\.next\static" "$TEMP_DIR\.next\static" /E /NFL /NDL /NJH /NJS
+
 # Copy public to public
 New-Item -ItemType Directory -Path "$TEMP_DIR\public" -Force | Out-Null
 robocopy "$SOURCE_DIR\public" "$TEMP_DIR\public" /E /NFL /NDL /NJH /NJS
+
+# VERIFICATION
+Write-Host "Verifying artifact integrity..."
+if (-not (Test-Path "$TEMP_DIR\.next\server\app\debug-version\page.js")) {
+    Write-Error "CRITICAL: debug-version/page.js is MISSING in the deployment artifacts!"
+    Write-Error "Checking $TEMP_DIR\.next\server\app structure:"
+    Get-ChildItem "$TEMP_DIR\.next\server\app" -Recurse | Select-Object -First 5 FullName | Write-Host
+    exit 1
+}
+else {
+    Write-Host "SUCCESS: debug-version verification passed."
+}
 
 # 3b. Verify .github integrity
 Write-Host "Restoring .github folder to ensure workflow persists..."
