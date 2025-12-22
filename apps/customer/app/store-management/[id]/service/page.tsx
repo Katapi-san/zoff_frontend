@@ -207,7 +207,7 @@ export default function StoreServiceMode() {
             time: timeStr,
             status: status,
             assignedStaff: res.staff?.display_name || res.staff?.name || (res.staff_id ? 'Assigned' : 'Unassigned'),
-            serviceMenu: 'メガネ作成・調整', // Mock static
+            serviceMenu: res.memo || 'メガネ作成・調整', // Use memo or default
             isNew: false, // Mock
             preferredTags: (c as any)?.preferred_tags?.map((pt: any) => ({ id: pt.tag?.id || 0, name: pt.tag?.name || '' })) || [],
             processAssignments: assignments,
@@ -552,13 +552,20 @@ export default function StoreServiceMode() {
                         </div>
 
                         {/* Interaction Actions */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-3 gap-2">
                             <button
                                 onClick={handleRaiseHand}
                                 className="bg-white border-2 border-[#00A0E9] text-[#00A0E9] rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-blue-50 transition-colors"
                             >
                                 <Hand className="w-6 h-6" />
                                 <span className="text-xs font-bold">引き受ける</span>
+                            </button>
+                            <button
+                                onClick={() => alert('スタッフ分担機能')}
+                                className="bg-white border-2 border-purple-500 text-purple-600 rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-purple-50 transition-colors"
+                            >
+                                <Users className="w-6 h-6" />
+                                <span className="text-xs font-bold">スタッフで分担する</span>
                             </button>
                             <button
                                 onClick={handlePassRequest}

@@ -211,7 +211,71 @@ def populate_reservations(conn):
                 reservation_count += 1
 
     conn.commit()
-    print(f"Created {reservation_count} reservations.")
+    print(f"Created {reservation_count} reservations (Random phase).")
+
+    # --- CUSTOM FIXES FOR USER REQUEST ---
+    print("Applying custom fixes...")
+    target_date = datetime.date(2025, 12, 17)
+    target_store_id = 287
+    
+    # Check if store 287 exists
+    c.execute("SELECT id FROM stores WHERE id = ?", (target_store_id,))
+    if not c.fetchone():
+        # Fallback: find any store with staff
+        c.execute("SELECT store_id FROM staff GROUP BY store_id HAVING COUNT(*) >= 1 LIMIT 1")
+        row = c.fetchone()
+        if row:
+            print(f"Store {target_store_id} not found, using {row[0]} instead for custom fixes.")
+            target_store_id = row[0]
+        else:
+            print("No suitable stores found! Skipping custom fixes.")
+            conn.commit()
+            return
+
+    start_of_day = datetime.datetime.combine(target_date, datetime.time(0, 0))
+    end_of_day = datetime.datetime.combine(target_date, datetime.time(23, 59, 59))
+    
+    # Delete conflicting reservations
+    # 1. Any existing for Customer 1 (Tokyu) or 10 (Ryosuke) on this day
+    # 2. Any reservation at 15:00 on this day (to make room/ensure cleanliness)
+    c.execute("DELETE FROM reservations WHERE (customer_id IN (1, 10) OR reservation_time = ?) AND reservation_time BETWEEN ? AND ?", 
+              (datetime.datetime.combine(target_date, datetime.time(15, 0)), start_of_day, end_of_day))
+
+    # Get a staff member for assignment
+    c.execute("SELECT id FROM staff WHERE store_id = ? LIMIT 1", (target_store_id,))
+    staff_row = c.fetchone()
+    staff_id = staff_row[0] if staff_row else None
+    
+    # 1. Tokyu (ID 1): Adjustment, Unassigned
+    # Using existing logic: if staff_id is NULL, it will be Unassigned in UI
+    c.execute('''INSERT INTO reservations (
+        store_id, customer_id, staff_id, reservation_time, status, memo
+    ) VALUES (?, ?, ?, ?, ?, ?)''', (
+        target_store_id, 1, None, 
+        datetime.datetime.combine(target_date, datetime.time(11, 0)), 
+        'Reservation', '調整・メンテナンス'
+    ))
+
+    # 2. Ryosuke (ID 10): 10:00 only. Assigned.
+    c.execute('''INSERT INTO reservations (
+        store_id, customer_id, staff_id, reservation_time, status, memo
+    ) VALUES (?, ?, ?, ?, ?, ?)''', (
+        target_store_id, 10, staff_id, 
+        datetime.datetime.combine(target_date, datetime.time(10, 0)), 
+        'Reservation_Nomination' if staff_id else 'Reservation', 'メガネ作成・調整'
+    ))
+
+    # 3. Someone else (ID 6 Rijicho) at 15:00
+    c.execute('''INSERT INTO reservations (
+        store_id, customer_id, staff_id, reservation_time, status, memo
+    ) VALUES (?, ?, ?, ?, ?, ?)''', (
+        target_store_id, 6, staff_id, 
+        datetime.datetime.combine(target_date, datetime.time(15, 0)), 
+        'Reservation_Nomination' if staff_id else 'Reservation', 'メガネ作成・調整'
+    ))
+
+    conn.commit()
+    print("Applied custom fixes for Tokyu & Ryosuke.")
 
 def main():
     setup_directories()
