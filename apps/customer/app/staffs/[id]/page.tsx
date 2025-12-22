@@ -1,17 +1,28 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Staff, fetchStaff } from '../../../lib/api';
-import { getTagBadgeStyle } from '../../../lib/tagUtils';
+import { getTagBadgeStyle, getTagActiveStyle } from '../../../lib/tagUtils';
 import { Star, ChevronLeft, MapPin, BadgeCheck } from 'lucide-react';
 
 export default function StaffProfilePage() {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const menuId = searchParams.get('menuId');
     const [staff, setStaff] = useState<Staff | null>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedTags, setSelectedTags] = useState<number[]>([]);
+
+    const toggleTag = (tagId: number) => {
+        setSelectedTags(prev =>
+            prev.includes(tagId)
+                ? prev.filter(id => id !== tagId)
+                : [...prev, tagId]
+        );
+    };
 
     useEffect(() => {
         const loadStaff = async () => {
@@ -86,12 +97,26 @@ export default function StaffProfilePage() {
 
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-2 justify-center mb-8">
-                        {staff.tags?.map(tag => (
-                            <span key={tag.id} className={`px-3 py-1.5 rounded-full text-xs font-bold border ${getTagBadgeStyle(tag.id)}`}>
-                                #{tag.name}
-                            </span>
-                        ))}
+                    <div className="mb-8 text-center p-6 border-2 border-[#00A0E9] rounded-2xl bg-blue-50/30">
+                        <p className="text-sm font-bold text-gray-700 mb-4">気に入ったタグにチェックしてください</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            {staff.tags?.map(tag => {
+                                const isSelected = selectedTags.includes(tag.id);
+                                return (
+                                    <button
+                                        key={tag.id}
+                                        onClick={() => toggleTag(tag.id)}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${isSelected
+                                            ? getTagActiveStyle(tag.id)
+                                            : `${getTagBadgeStyle(tag.id)} hover:opacity-80`
+                                            }`}
+                                    >
+                                        #{tag.name}
+                                        {isSelected && <span className="ml-1 inline-block">✓</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Personal Content Section */}
@@ -126,7 +151,7 @@ export default function StaffProfilePage() {
             {/* Fixed Bottom Button - Raised to bottom-16 to clear BottomNav */}
             <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/90 backdrop-blur-sm border-t border-gray-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-40">
                 <Link
-                    href={`/reservation/staff/${staff.id}`}
+                    href={`/reservation/staff/${staff.id}?tags=${selectedTags.join(',')}&menuId=${menuId || ''}`}
                     className="block w-full max-w-md mx-auto bg-[#00A0E9] text-white font-bold py-4 rounded-xl text-center shadow-lg shadow-blue-200 hover:bg-[#008bc9] transition-all active:scale-[0.98]"
                 >
                     このスタッフを指名して予約

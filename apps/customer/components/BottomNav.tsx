@@ -1,6 +1,6 @@
 "use client";
 
-import { Store, MapPin, Search, Crown, CreditCard, Home } from 'lucide-react';
+import { Store, MapPin, Search, Crown, CreditCard, Home, Users, ClipboardList, PenTool, Hand, Calendar, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -55,24 +55,59 @@ function NavItem({ icon, label, active = false, href }: { icon: React.ReactNode;
     );
 }
 
-import { Users, ClipboardList, PenTool, Hand } from 'lucide-react';
+
 
 export function StoreBottomNav() {
     const pathname = usePathname();
-    const isActive = (path: string) => pathname?.includes(path);
-
-
     // Only show on store DASHBOARD pages (singular /store-management)
     const isStoreDashboard = pathname?.startsWith('/store-management');
     if (!isStoreDashboard) return null;
 
+    // Extract store ID
+    const match = pathname?.match(/\/store-management\/(\d+)/);
+    const storeId = match ? match[1] : '';
+
+    if (!storeId) return null;
+
+    const isActive = (query: string) => {
+        if (query === '') return pathname === `/store-management/${storeId}`;
+        // Check query params if they exist in window? No, usePathname doesn't include query.
+        // We can't easily highlight based on query params here without useSearchParams.
+        // But for "Store Top", we check exact path.
+        // For others, if pathname includes '/service', we might highlight one of them?
+        // Since we can't tell difference between tabs just by path '/service', highlighting might be tricky.
+        // But for now, let's just implement links.
+        return false;
+    };
+
+    // Note: To highlight correctly, we need useSearchParams
+    // But since this component is separate, let's just set links. 
+    // Highlighting based on tab might require moving this nav INTO the page, OR using Global Layout + SearchParams.
+
     return (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50 text-white">
             <div className="flex justify-around items-center h-16">
-                <StoreNavItem href="#" icon={<Users className="w-6 h-6" />} label="顧客リスト" active={true} />
-                <StoreNavItem href="#" icon={<ClipboardList className="w-6 h-6" />} label="カルテ" />
-                <StoreNavItem href="#" icon={<PenTool className="w-6 h-6" />} label="メモ" />
-                <StoreNavItem href="#" icon={<Hand className="w-6 h-6" />} label="HR" />
+                <StoreNavItem
+                    href={`/store-management/${storeId}`}
+                    icon={<Home className="w-6 h-6" />}
+                    label="店舗トップ"
+                    active={pathname === `/store-management/${storeId}`}
+                />
+                <StoreNavItem
+                    href={`/store-management/${storeId}/notices`}
+                    icon={<Bell className="w-6 h-6" />}
+                    label="連絡事項"
+                />
+                <StoreNavItem
+                    href={`/store-management/${storeId}/service?tab=calendar`}
+                    icon={<Calendar className="w-6 h-6" />}
+                    label="予約状況"
+                />
+                <StoreNavItem
+                    href={`/store-management/${storeId}/service?tab=memo`}
+                    icon={<PenTool className="w-6 h-6" />}
+                    label="メモ"
+                />
             </div>
         </div>
     );

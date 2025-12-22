@@ -25,6 +25,10 @@ Write-Host "Copying Backend Artifacts..."
 # Exclude: venv, __pycache__, .git, .vscode, logs, tmp
 robocopy "$SOURCE_DIR" "$TEMP_DIR" /E /XD "venv" "__pycache__" ".git" ".vscode" "logs" "temp_*" /XF "*.pyc" "*.log" "*.DS_Store" /NFL /NDL /NJH /NJS
 
+# Copy Database
+Write-Host "Copying Database..."
+Copy-Item "$PSScriptRoot\zoff_scope_v3.db" "$TEMP_DIR\zoff_scope_v3.db"
+
 # Zip the artifacts using tar to ensure POSIX paths
 Write-Host "2. Zipping artifacts using tar..."
 if (Test-Path $ZIP_FILE) { Remove-Item -Force $ZIP_FILE }

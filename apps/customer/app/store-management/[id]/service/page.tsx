@@ -1,28 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
-    Users,
-    Clock,
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    Search,
-    Edit3,
-    Settings,
-    History,
-    Hand,
-    ArrowRightLeft,
-    CheckCircle2,
-    MessageSquare,
-    Phone,
-    MapPin,
-    Smartphone,
-    FileText, // Added
-    Shield // Added
+    Users, Clock, Calendar, ChevronLeft, ChevronRight, Search, Edit3, Settings, History, Hand, ArrowRightLeft, CheckCircle2, MessageSquare, Phone, MapPin, Smartphone, FileText, Shield
 } from 'lucide-react';
+import { fetchReservations, fetchStaff, fetchStore, Reservation as ApiReservation, Staff, Store } from '../../../../lib/api';
 
 // --- Types ---
 type StatusType = 'Check-in' | 'Reservation' | 'Reservation_Nomination';
@@ -34,20 +18,31 @@ interface Note {
     author: string;
 }
 
-interface Purchase {
-    date: string;
-    model: string;
-    type: string;
+interface ProcessAssignment {
+    staffId: number;
+    staffName: string;
+    staffImage?: string;
+}
+
+interface ProcessAssignments {
+    reception?: ProcessAssignment | null;
+    hearing?: ProcessAssignment | null;
+    frameSelection?: ProcessAssignment | null;
+    visionTest?: ProcessAssignment | null;
+    payment?: ProcessAssignment | null;
+    delivery?: ProcessAssignment | null;
+    [key: string]: ProcessAssignment | null | undefined;
 }
 
 interface Customer {
     id: number;
     name: string;
     kana: string;
-    profile: string; // e.g. "30代男性 会社員 / 東京都在住"
+    profile: string;
     time: string;
     status: StatusType;
     assignedStaff: string | 'Unassigned';
+    serviceMenu: string;
     isNew: boolean;
     lastVisit?: string;
     vision: {
@@ -59,7 +54,6 @@ interface Customer {
         model: string;
         date: string;
         adviceSent: boolean;
-        // Search Detail Mock Data
         lensName: string;
         warrantyDate: string;
         price: string;
@@ -70,86 +64,252 @@ interface Customer {
         };
     };
     notes: Note[];
-    // HR Interaction Metrics (Mocking real-time state)
-    raisedHands: number; // "I want to take this"
-    passesRequested: number; // "Help me"
+    raisedHands: number;
+    passesRequested: number;
+    preferredTags?: { id: number; name: string; }[];
+    processAssignments?: ProcessAssignments;
 }
-
-// --- Mock Data ---
-const MOCK_CUSTOMERS: Customer[] = [
-    {
-        id: 1,
-        name: '山田 太郎',
-        kana: 'ヤマダ タロウ',
-        profile: '30代男性 会社員 / 東京都在住',
-        time: '14:00',
-        status: 'Reservation_Nomination',
-        assignedStaff: 'あなた',
-        isNew: false,
-        lastVisit: '2025/11/10',
-        vision: {
-            date: '2024/11/10',
-            r: 'S -3.25',
-            l: 'S -3.00'
-        },
-        ecActivity: {
-            model: 'Zoff SMART Skinny',
-            date: '2025/11/25',
-            adviceSent: false,
-            lensName: 'Z-155S(A)',
-            warrantyDate: '2026/06/07',
-            price: '0円',
-            prescription: {
-                pd: '61.0',
-                r: { sph: '-3.00', cyl: '-0.50', axis: '180', add: '', v: '1.2' },
-                l: { sph: '-2.75', cyl: '-0.50', axis: '170', add: '', v: '1.2' }
-            }
-        },
-        notes: [
-            { id: 101, content: '前回のフィッティング時に「耳のあたりが痛くなりやすい」との相談あり。テンプルの調整を緩めに設定済み。今回はPC作業用のブルーライトカットを検討中。', date: '2025/11/10', author: 'あなた' }
-        ],
-        raisedHands: 1,
-        passesRequested: 0,
-    },
-    {
-        id: 2,
-        name: '佐藤 花子',
-        kana: 'サトウ ハナコ',
-        profile: '20代女性 学生 / 神奈川県在住',
-        time: '14:30',
-        status: 'Reservation',
-        assignedStaff: 'Unassigned',
-        isNew: true,
-        vision: { date: '-', r: '-', l: '-' },
-        notes: [],
-        raisedHands: 3, // Many staff want to take this new customer
-        passesRequested: 0,
-    },
-    {
-        id: 3,
-        name: '鈴木 一郎',
-        kana: 'スズキ イチロウ',
-        profile: '50代男性 自営業 / 大阪府在住',
-        time: '13:45',
-        status: 'Check-in',
-        assignedStaff: 'Unassigned',
-        isNew: false,
-        lastVisit: '2025/10/01',
-        vision: { date: '2025/10/01', r: 'S -1.00', l: 'S -1.25' },
-        notes: [
-            { id: 102, content: '予備のメガネを探している', date: '2025/10/01', author: '田中' }
-        ],
-        raisedHands: 0,
-        passesRequested: 2, // Needs help
-    }
-];
 
 export default function StoreServiceMode() {
     const params = useParams();
-    const [activeTab, setActiveTab] = useState<'list' | 'history' | 'memo' | 'settings'>('list');
+    const searchParams = useSearchParams();
+
+    const [activeTab, setActiveTab] = useState<'list' | 'reservation' | 'history' | 'memo' | 'calendar' | 'settings'>('list');
     const [viewMode, setViewMode] = useState<'list' | 'detail' | 'order_detail'>('list');
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [filterMyCustomers, setFilterMyCustomers] = useState(false);
+
+    // Data State
+    const [reservations, setReservations] = useState<ApiReservation[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [loggedInStaff, setLoggedInStaff] = useState<Staff | null>(null);
+    const [allStaff, setAllStaff] = useState<Staff[]>([]);
+    const [store, setStore] = useState<Store | null>(null);
+
+    // Process Assignment Local State
+    const [processUpdates, setProcessUpdates] = useState<{ [customerId: number]: ProcessAssignments }>({});
+    const [selectedProcess, setSelectedProcess] = useState<{
+        customerId: number;
+        customerName: string;
+        processKey: string;
+        processLabel: string;
+    } | null>(null);
+    const [showStaffSelector, setShowStaffSelector] = useState(false);
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['list', 'reservation', 'memo', 'calendar'].includes(tab)) {
+            setActiveTab(tab as any);
+            if (tab !== 'memo' && tab !== 'calendar') setViewMode('list');
+        }
+    }, [searchParams]);
+
+    // Fetch Reservations
+    useEffect(() => {
+        if (!params.id) return;
+        const loadReservations = async () => {
+            try {
+                // Fetch for current month range to support calendar and list
+                // Fixed date range for demo: 2025-12-01 to 2025-12-31
+                const data = await fetchReservations(Number(params.id), undefined, '2025-12-01', '2025-12-31');
+                setReservations(data);
+            } catch (e) {
+                console.error("Failed to load reservations", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadReservations();
+    }, [params.id]);
+
+    // Fetch Store Info
+    useEffect(() => {
+        if (!params.id) return;
+        const loadStore = async () => {
+            try {
+                const data = await fetchStore(Number(params.id));
+                setStore(data);
+            } catch (e) {
+                console.error("Failed to load store", e);
+            }
+        };
+        loadStore();
+    }, [params.id]);
+
+    // Fetch Staff Info
+    useEffect(() => {
+        const staffId = searchParams.get('staffId');
+        if (!staffId) return;
+
+        const loadStaff = async () => {
+            try {
+                const staff = await fetchStaff(Number(staffId));
+                setLoggedInStaff(staff);
+
+                // For demo, create mock staff list (in production, fetch from API)
+                const mockStaff: Staff[] = [
+                    staff,
+                    { id: 2, name: 'スタッフB', display_name: 'スタッフB', role: 'スタッフ', image_url: null, store_id: Number(params.id), tags: [] },
+                    { id: 3, name: 'スタッフC', display_name: 'スタッフC', role: 'スタッフ', image_url: null, store_id: Number(params.id), tags: [] },
+                ];
+                setAllStaff(mockStaff);
+            } catch (e) {
+                console.error("Failed to load staff", e);
+            }
+        };
+        loadStaff();
+    }, [searchParams, params.id]);
+
+    // Map API Data to UI Customers
+    const mapReservationToCustomer = (res: ApiReservation): Customer => {
+        const c = res.customer;
+        const ph = c?.purchase_histories?.[0]; // Latest purchase
+
+        let status: StatusType = 'Reservation';
+        if (res.status === 'Check-in') status = 'Check-in';
+        if (res.staff_id) status = 'Reservation_Nomination';
+
+        const timeStr = new Date(res.reservation_time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+        // Default assignments logic
+        // If nominated (store_id has value), assign Hearing, Frame, Vision to that staff
+        let assignments: ProcessAssignments = {
+            reception: null,
+            hearing: null,
+            frameSelection: null,
+            visionTest: null,
+            payment: null,
+            delivery: null
+        };
+
+        if (res.staff) {
+            const assignedStaffObj: ProcessAssignment = {
+                staffId: res.staff.id,
+                staffName: res.staff.display_name || res.staff.name,
+                staffImage: res.staff.image_url
+            };
+            assignments.hearing = assignedStaffObj;
+            assignments.frameSelection = assignedStaffObj;
+            assignments.visionTest = assignedStaffObj;
+        }
+
+        // Merge local updates
+        const customerId = c?.id || 0;
+        if (processUpdates[customerId]) {
+            assignments = { ...assignments, ...processUpdates[customerId] };
+        }
+
+        return {
+            id: c?.id || 0,
+            name: c?.name || 'Unknown',
+            kana: c?.kana || '',
+            profile: c?.profile || 'No Profile',
+            time: timeStr,
+            status: status,
+            assignedStaff: res.staff?.display_name || res.staff?.name || (res.staff_id ? 'Assigned' : 'Unassigned'),
+            serviceMenu: 'メガネ作成・調整', // Mock static
+            isNew: false, // Mock
+            preferredTags: (c as any)?.preferred_tags?.map((pt: any) => ({ id: pt.tag?.id || 0, name: pt.tag?.name || '' })) || [],
+            processAssignments: assignments,
+            vision: {
+                date: ph?.purchase_date || '-',
+                r: ph?.prescription_r_sph ? `S ${ph.prescription_r_sph}` : '-',
+                l: ph?.prescription_l_sph ? `S ${ph.prescription_l_sph}` : '-'
+            },
+            ecActivity: ph ? {
+                model: ph.frame_model || 'Unknown Frame',
+                date: ph.purchase_date || '-',
+                adviceSent: false,
+                lensName: ph.lens_r || 'Standard Lens',
+                warrantyDate: '2026/12/31', // Mock
+                price: '¥8,800',
+                prescription: {
+                    pd: ph.prescription_pd?.toString() || '60',
+                    r: { sph: ph.prescription_r_sph?.toString() || '0', cyl: ph.prescription_r_cyl?.toString() || '0', axis: ph.prescription_r_axis?.toString() || '0', add: '', v: '1.0' },
+                    l: { sph: ph.prescription_l_sph?.toString() || '0', cyl: ph.prescription_l_cyl?.toString() || '0', axis: ph.prescription_l_axis?.toString() || '0', add: '', v: '1.0' }
+                }
+            } : undefined,
+            notes: (c as any).notes || [],
+            raisedHands: 0,
+            passesRequested: 0
+        };
+    };
+
+
+    const handleProcessClick = (customer: Customer, processKey: string, processLabel: string) => {
+        setSelectedProcess({
+            customerId: customer.id,
+            customerName: customer.name,
+            processKey,
+            processLabel
+        });
+        setShowStaffSelector(false);
+    };
+
+    const handleAssignSelf = () => {
+        if (!selectedProcess || !loggedInStaff) return;
+        const { customerId, processKey } = selectedProcess;
+
+        setProcessUpdates(prev => ({
+            ...prev,
+            [customerId]: {
+                ...prev[customerId],
+                [processKey]: {
+                    staffId: loggedInStaff.id,
+                    staffName: loggedInStaff.display_name || loggedInStaff.name,
+                    staffImage: loggedInStaff.image_url
+                }
+            }
+        }));
+        setSelectedProcess(null);
+    };
+
+    const handleAssignOther = (staff: Staff) => {
+        if (!selectedProcess) return;
+        const { customerId, processKey } = selectedProcess;
+
+        setProcessUpdates(prev => ({
+            ...prev,
+            [customerId]: {
+                ...prev[customerId],
+                [processKey]: {
+                    staffId: staff.id,
+                    staffName: staff.display_name || staff.name,
+                    staffImage: staff.image_url
+                }
+            }
+        }));
+        setSelectedProcess(null);
+        setShowStaffSelector(false);
+    };
+
+    // Filter Logic
+    // Mock "Today" as 2025-12-17 for demo
+    const TODAY_STR = '2025-12-17';
+
+    const todaysReservations = reservations.filter(r => {
+        const d = new Date(r.reservation_time).toISOString().split('T')[0];
+        return d === TODAY_STR;
+    });
+
+    let displayCustomers = todaysReservations.map(mapReservationToCustomer);
+
+    // Sort by reservation time (ascending)
+    displayCustomers.sort((a, b) => {
+        const timeA = a.time.split(':').map(Number);
+        const timeB = b.time.split(':').map(Number);
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+
+    // 1. Tab Filter
+    if (activeTab === 'reservation') {
+        displayCustomers = displayCustomers.filter(c => c.status.includes('Reservation'));
+    }
+
+    // 2. My Customers Filter
+    if (filterMyCustomers) {
+        // Simple mock filter
+    }
 
     // Interactions
     const [interactionStats, setInteractionStats] = useState<{ raised: number, passed: number }>({ raised: 12, passed: 5 });
@@ -178,35 +338,74 @@ export default function StoreServiceMode() {
         setInteractionStats(prev => ({ ...prev, passed: prev.passed + 1 }));
     };
 
-    // Filter Logic
-    const displayCustomers = filterMyCustomers
-        ? MOCK_CUSTOMERS.filter(c => c.assignedStaff === 'あなた')
-        : MOCK_CUSTOMERS;
-
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-20 relative">
 
             {/* --- Header --- */}
-            <header className="fixed top-0 left-0 right-0 bg-[#00A0E9] text-white p-4 shadow-md z-30 h-16 flex items-center justify-between">
-                {viewMode !== 'list' ? (
-                    <button onClick={handleBack} className="flex items-center text-sm font-bold">
-                        <ChevronLeft className="w-5 h-5 mr-1" />
-                        戻る
-                    </button>
-                ) : (
-                    <h1 className="text-lg font-bold">Scope Studio App</h1>
-                )}
+            {/* --- Header --- */}
+            <header className="fixed top-0 left-0 right-0 bg-[#00A0E9] text-white shadow-md z-30 h-16 grid grid-cols-3 items-center px-4 relative">
 
-                {/* Global Stats / Notification */}
-                <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-end text-[10px] leading-tight opacity-90">
+                {/* Left: Store Name & Staff Info / Back Button */}
+                <div className="flex items-center justify-start h-full overflow-hidden">
+                    {viewMode !== 'list' ? (
+                        <button onClick={handleBack} className="flex items-center text-sm font-bold bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition-colors">
+                            <ChevronLeft className="w-5 h-5 mr-1" />
+                            戻る
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-4 w-full">
+                            {/* Store Name - New Requirement */}
+                            {store && (
+                                <h2 className="text-xl font-bold tracking-tight whitespace-nowrap truncate max-w-[400px]">{store.name}</h2>
+                            )}
+
+                            {/* Staff Info */}
+                            {loggedInStaff ? (
+                                <div className="flex items-center gap-2 bg-white/10 pl-1 pr-3 py-1 rounded-full border border-white/20 shrink-0">
+                                    <div className="w-9 h-9 rounded-full overflow-hidden bg-white/20 border border-white/50 shrink-0">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={loggedInStaff.image_url || "/globe.svg"}
+                                            alt={loggedInStaff.display_name || loggedInStaff.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col leading-none pr-1">
+                                        <span className="text-[9px] opacity-80 mb-0.5">担当</span>
+                                        <span className="text-sm font-bold whitespace-nowrap">{loggedInStaff.display_name || loggedInStaff.name}</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-sm opacity-80">担当: 未選択</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Center: App Title */}
+                <div className="flex items-center justify-center">
+                    <h1 className="text-xl font-bold tracking-wider whitespace-nowrap">Scope Studio App</h1>
+                </div>
+
+                {/* Right: Stats */}
+                <div className="flex items-center justify-end gap-3">
+                    <div className="flex flex-col items-end text-[10px] leading-tight opacity-90 hidden sm:flex">
                         <span>Hands: {interactionStats.raised}</span>
                         <span>Passes: {interactionStats.passed}</span>
                     </div>
-                    <div className="bg-white text-[#00A0E9] rounded-full px-2 py-0.5 text-xs font-bold shadow">
-                        3件
+                    <div className="bg-white text-[#00A0E9] rounded-full px-3 py-1 text-sm font-bold shadow min-w-[3rem] text-center">
+                        {displayCustomers.length}件
                     </div>
                 </div>
+
+                {/* Secret Admin Link (Clickable overlay on right side if needed, or kept separate) */}
+                {/* Currently maintained as absolute but z-index adjusted to not block other interactions unless specifically targeted */}
+                <a
+                    href="/"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-red-500 opacity-0 cursor-pointer"
+                    aria-label="Go to Customer App"
+                ></a>
             </header>
 
             {/* --- Main Content --- */}
@@ -215,48 +414,125 @@ export default function StoreServiceMode() {
                 {viewMode === 'list' && (
                     <div className="space-y-4">
                         {/* Filter Toggle */}
-                        <div className="flex justify-end mb-2">
+                        <div className="flex justify-end gap-2 mb-2">
                             <button
-                                onClick={() => setFilterMyCustomers(!filterMyCustomers)}
-                                className={`text-xs px-3 py-1 rounded-full border ${filterMyCustomers ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-500 border-blue-200'}`}
+                                onClick={() => setFilterMyCustomers(false)}
+                                className={`text-xs px-4 py-2 rounded-full border font-bold transition-all ${!filterMyCustomers ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-400 border-gray-200'}`}
                             >
-                                {filterMyCustomers ? '自分の指名のみ' : '全員を表示'}
+                                全員を表示
+                            </button>
+                            <button
+                                onClick={() => setFilterMyCustomers(true)}
+                                className={`text-xs px-4 py-2 rounded-full border font-bold transition-all ${filterMyCustomers ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-400 border-gray-200'}`}
+                            >
+                                自分の指名のみ表示
                             </button>
                         </div>
 
-                        {displayCustomers.map(customer => (
+                        {displayCustomers.length > 0 ? displayCustomers.map(customer => (
                             <div
                                 key={customer.id}
                                 onClick={() => handleCustomerClick(customer)}
-                                className="bg-white rounded-xl shadow-sm border border-blue-200 overflow-hidden active:scale-[0.99] transition-transform"
+                                className="bg-white rounded-xl shadow-sm border border-blue-200 overflow-hidden active:scale-[0.99] transition-transform flex"
                             >
-                                <div className="p-4 border-b border-blue-100 flex justify-between items-start">
+                                {/* Time Column */}
+                                <div className="bg-blue-50 w-24 flex flex-col items-center justify-center border-r border-blue-100 p-2 shrink-0">
+                                    <span className="text-2xl font-black text-blue-900 tracking-tighter">{customer.time}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold mt-1 whitespace-nowrap
+                                        ${customer.status === 'Reservation_Nomination' ? 'bg-blue-100 text-blue-700' :
+                                            customer.status === 'Reservation' ? 'bg-gray-200 text-gray-600' :
+                                                'bg-green-100 text-green-700'}`}>
+                                        {customer.status === 'Reservation_Nomination' ? '指名予約' :
+                                            customer.status === 'Reservation' ? '通常予約' : '来店中'}
+                                    </span>
+                                </div>
+
+                                {/* Info Column */}
+                                <div className="flex-1 p-3 flex flex-col justify-between">
                                     <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-sm font-bold text-gray-500">{customer.time}</span>
-                                            <span className={`text-xs px-2 py-0.5 rounded font-bold 
-                                                ${customer.status === 'Reservation_Nomination' ? 'bg-blue-50 text-blue-700' :
-                                                    customer.status === 'Reservation' ? 'bg-gray-100 text-gray-600' :
-                                                        'bg-green-100 text-green-700'}`}>
-                                                {customer.status === 'Reservation_Nomination' ? '予約 (指名)' :
-                                                    customer.status === 'Reservation' ? '予約' : '来店中'}
-                                            </span>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h2 className="text-lg font-bold text-gray-800 leading-tight">
+                                                {customer.name} <span className="text-xs font-normal text-gray-400">様</span>
+                                            </h2>
+                                            {customer.assignedStaff === 'あなた' && (
+                                                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">担当</span>
+                                            )}
                                         </div>
-                                        <h2 className="text-xl font-bold text-blue-900">{customer.name} <span className="text-sm font-normal text-gray-400">様</span></h2>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-blue-500 font-bold mb-1">
-                                            {customer.assignedStaff === 'あなた' ? '担当: あなた' :
-                                                customer.isNew ? '新規' : ''}
+                                        <p className="text-sm font-bold text-[#00A0E9] mb-1">
+                                            {customer.serviceMenu}
                                         </p>
+                                        {/* Preferred Tags */}
+                                        {customer.preferredTags && customer.preferredTags.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                                                {customer.preferredTags.slice(0, 3).map(tag => (
+                                                    <span key={tag.id} className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-200">
+                                                        {tag.name}
+                                                    </span>
+                                                ))}
+                                                {customer.preferredTags.length > 3 && (
+                                                    <span className="text-[9px] text-gray-400">+{customer.preferredTags.length - 3}</span>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Service Process Flow - New Requirement */}
+                                        <div className="flex items-center justify-between mt-3 bg-gray-50 rounded-lg p-2 border border-gray-100 overflow-x-auto">
+                                            {[
+                                                { key: 'reception', label: '受付' },
+                                                { key: 'hearing', label: 'ヒアリング' },
+                                                { key: 'frameSelection', label: 'フレーム' },
+                                                { key: 'visionTest', label: '視力検査' },
+                                                { key: 'payment', label: '支払い' },
+                                                { key: 'delivery', label: 'お渡し' },
+                                            ].map((proc, idx) => {
+                                                const assignment = (customer.processAssignments as any)?.[proc.key];
+                                                return (
+                                                    <div key={proc.key} className="flex flex-col items-center min-w-[3rem] relative">
+                                                        <div className="mb-1 text-[8px] text-gray-500 font-bold whitespace-nowrap">{proc.label}</div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleProcessClick(customer, proc.key, proc.label);
+                                                            }}
+                                                            className="w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center overflow-hidden hover:border-blue-400 hover:ring-2 hover:ring-blue-100 transition-all relative group z-10"
+                                                        >
+                                                            {assignment ? (
+                                                                <img
+                                                                    src={assignment.staffImage || "/globe.svg"}
+                                                                    alt={assignment.staffName}
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => { e.currentTarget.src = "/globe.svg"; }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-gray-300 text-xs font-bold">+</span>
+                                                            )}
+                                                            {/* Tooltip on hover */}
+                                                            {assignment && (
+                                                                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-10">
+                                                                    {assignment.staffName}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                        {idx < 5 && (
+                                                            <div className="absolute top-1/2 -right-3 w-4 h-[1px] bg-gray-200 mt-2" />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2 border-t border-gray-100 pt-2 text-xs text-gray-400">
+                                        <span>{customer.profile}</span>
+                                        {customer.isNew && <span className="text-green-600 font-bold bg-green-50 px-2 rounded">新規</span>}
                                     </div>
                                 </div>
-                                <div className="px-4 py-2 bg-blue-50/30 flex justify-between items-center text-xs text-gray-500">
-                                    <span>{customer.profile}</span>
-                                    <ChevronRight className="w-4 h-4 text-blue-300" />
+                                <div className="w-8 flex items-center justify-center bg-gray-50/50">
+                                    <ChevronRight className="w-5 h-5 text-gray-300" />
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="text-center py-10 text-gray-400 bg-white rounded-xl">本日の予約はありません</div>
+                        )}
                     </div>
                 )}
 
@@ -275,21 +551,21 @@ export default function StoreServiceMode() {
                             </div>
                         </div>
 
-                        {/* Interaction Actions (The "Raise Hand / Pass" Feature) */}
+                        {/* Interaction Actions */}
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={handleRaiseHand}
-                                className="bg-white border-2 border-[#FF9200] text-[#FF9200] rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-orange-50 transition-colors"
+                                className="bg-white border-2 border-[#00A0E9] text-[#00A0E9] rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-blue-50 transition-colors"
                             >
                                 <Hand className="w-6 h-6" />
-                                <span className="text-xs font-bold">手を挙げる (Join)</span>
+                                <span className="text-xs font-bold">引き受ける</span>
                             </button>
                             <button
                                 onClick={handlePassRequest}
-                                className="bg-white border-2 border-[#5CC035] text-[#5CC035] rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-green-50 transition-colors"
+                                className="bg-white border-2 border-[#FF9200] text-[#FF9200] rounded-xl p-3 flex flex-col items-center justify-center gap-1 active:bg-orange-50 transition-colors"
                             >
                                 <ArrowRightLeft className="w-6 h-6" />
-                                <span className="text-xs font-bold">パス / Help</span>
+                                <span className="text-xs font-bold">ほかのスタッフに任せる</span>
                             </button>
                         </div>
 
@@ -475,39 +751,81 @@ export default function StoreServiceMode() {
                     </div>
                 )}
 
-            </main>
+                {/* --- Calendar View --- */}
+                {activeTab === 'calendar' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-blue-200 p-4 min-h-[500px]">
+                        <h2 className="text-lg font-bold text-blue-800 mb-4 flex items-center gap-2">
+                            <Calendar className="w-5 h-5" /> 予約状況 (2025年12月)
+                        </h2>
 
-            {/* --- Bottom Navigation --- */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-blue-200 h-16 flex justify-around items-center z-40 pb-safe">
-                <button
-                    onClick={() => { setActiveTab('list'); setViewMode('list'); }}
-                    className={`flex flex-col items-center justify-center w-full h-full ${activeTab === 'list' ? 'text-[#00A0E9]' : 'text-gray-400'}`}
-                >
-                    <Users className="w-6 h-6 mb-1" />
-                    <span className="text-[10px] font-bold">指名リスト</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`flex flex-col items-center justify-center w-full h-full ${activeTab === 'history' ? 'text-[#00A0E9]' : 'text-gray-400'}`}
-                >
-                    <History className="w-6 h-6 mb-1" />
-                    <span className="text-[10px] font-bold">接客履歴</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('memo')}
-                    className={`flex flex-col items-center justify-center w-full h-full ${activeTab === 'memo' ? 'text-[#00A0E9]' : 'text-gray-400'}`}
-                >
-                    <Edit3 className="w-6 h-6 mb-1" />
-                    <span className="text-[10px] font-bold">メモ記入</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`flex flex-col items-center justify-center w-full h-full ${activeTab === 'settings' ? 'text-[#00A0E9]' : 'text-gray-400'}`}
-                >
-                    <Settings className="w-6 h-6 mb-1" />
-                    <span className="text-[10px] font-bold">設定</span>
-                </button>
-            </nav>
+                        {/* Calendar Grid */}
+                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                            {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
+                                <div key={i} className={`text-xs font-bold py-1 ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-gray-500'}`}>
+                                    {day}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-7 gap-1">
+                            {/* December 2025 starts on Monday (1st) */}
+                            {Array.from({ length: 35 }).map((_, i) => {
+                                const offset = 1; // Dec 1 is Monday
+                                const day = i - offset + 1;
+                                const isCurrentMonth = day > 0 && day <= 31;
+
+                                // Find reservations for this day
+                                const dayReservations = isCurrentMonth ? reservations.filter(r => {
+                                    const d = new Date(r.reservation_time);
+                                    return d.getDate() === day && d.getMonth() === 11; // Dec 2025
+                                }) : [];
+
+                                const hasReservation = dayReservations.length > 0;
+
+                                return (
+                                    <div key={i} className={`aspect-square border border-gray-100 rounded flex flex-col items-center justify-start py-1 relative ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}`}>
+                                        <span className={`text-sm ${!isCurrentMonth ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {day > 0 && day <= 31 ? day : ''}
+                                        </span>
+                                        {hasReservation && isCurrentMonth && (
+                                            <div className="mt-1 flex flex-col items-center gap-0.5 w-full px-1">
+                                                <div className="w-full bg-blue-100 text-blue-700 text-[8px] px-0.5 truncate text-center rounded">
+                                                    {dayReservations.length}件
+                                                </div>
+                                                {dayReservations.slice(0, 1).map((r, idx) => (
+                                                    <div key={idx} className="w-full bg-green-50 text-green-700 text-[8px] px-0.5 truncate text-center rounded">
+                                                        {r.staff?.name || '担当'}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-6 border-t border-gray-100 pt-4">
+                            <h3 className="text-sm font-bold text-gray-700 mb-2">今後の予約 (リスト)</h3>
+                            <div className="space-y-2">
+                                {reservations
+                                    .filter(r => new Date(r.reservation_time) >= new Date(2025, 11, 17)) // From 17th
+                                    .sort((a, b) => new Date(a.reservation_time).getTime() - new Date(b.reservation_time).getTime())
+                                    .slice(0, 5) // Show top 5
+                                    .map((r, idx) => (
+                                        <div key={idx} className="flex items-center text-sm p-2 bg-white rounded border border-gray-200">
+                                            <div className="w-12 font-bold text-blue-700">{new Date(r.reservation_time).getDate()}日</div>
+                                            <div className="w-12 text-gray-500">{new Date(r.reservation_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                            <div className="flex-1 font-bold">{r.customer?.name} 様</div>
+                                            <div className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">担当: {r.staff?.name || '-'}</div>
+                                        </div>
+                                    ))}
+                                {reservations.length === 0 && <p className="text-sm text-gray-500">予約はありません</p>}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+            </main>
         </div>
     );
 }
+

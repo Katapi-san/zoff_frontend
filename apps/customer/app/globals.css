@@ -43,8 +43,13 @@
   }
 }
 
+html {
+  background: #00A0E9;
+}
+
 body {
-  background: var(--background);
+  background: #00A0E9;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+

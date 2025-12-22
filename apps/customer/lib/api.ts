@@ -26,6 +26,7 @@ export interface Staff {
     role?: string;
     store_id: number;
     image_url?: string;
+    introduction?: string;
     tags?: Tag[];
     store?: Store;
 }
@@ -108,6 +109,73 @@ export async function fetchStore(id: number | string): Promise<Store> {
 
     if (!res.ok) {
         throw new Error("Failed to fetch store");
+    }
+
+    // ... existing fetchStore ...
+    return res.json();
+}
+
+// --- Reservation & Customer Interfaces ---
+
+export interface PurchaseHistory {
+    id: number;
+    purchase_date: string;
+    frame_model?: string;
+    lens_r?: string;
+    lens_l?: string;
+    warranty_info?: string;
+    prescription_pd?: number;
+    prescription_r_sph?: number;
+    prescription_r_cyl?: number;
+    prescription_r_axis?: number;
+    prescription_l_sph?: number;
+    prescription_l_cyl?: number;
+    prescription_l_axis?: number;
+}
+
+export interface CustomerPreferredTag {
+    tag: Tag;
+}
+
+export interface Customer {
+    id: number;
+    name?: string;
+    kana?: string;
+    gender?: string;
+    age?: number;
+    profile?: string;
+    image_url?: string;
+    purchase_histories?: PurchaseHistory[];
+    preferred_tags?: CustomerPreferredTag[];
+}
+
+export interface Reservation {
+    id: number;
+    store_id: number;
+    customer_id: number;
+    staff_id?: number;
+    reservation_time: string; // ISO datetime
+    status: string;
+    memo?: string;
+    customer?: Customer;
+    staff?: Staff;
+}
+
+export async function fetchReservations(storeId: number, date?: string, start_date?: string, end_date?: string): Promise<Reservation[]> {
+    const params = new URLSearchParams();
+    params.append('store_id', storeId.toString());
+    if (date) params.append('date', date);
+    if (start_date) params.append('start_date', start_date);
+    if (end_date) params.append('end_date', end_date);
+    params.append("_t", Date.now().toString());
+
+    // Fix: Ensure we are using correct endpoint prefix if needed. Backend router is /reservations
+    const res = await fetch(`${API_BASE_URL}/reservations/?${params.toString()}`, {
+        cache: "no-store",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch reservations");
     }
 
     return res.json();

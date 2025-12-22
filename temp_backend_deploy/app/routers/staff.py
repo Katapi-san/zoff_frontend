@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app import schemas
 from app.database import get_db
-from app.models.store import Staff
+from app.models import Staff
 
 router = APIRouter(
     prefix="/staffs",

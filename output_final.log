@@ -1,0 +1,120 @@
+DEBUG: Listing https://zoff-scope-backend.scm.azurewebsites.net/api/vfs/LogFiles/...
+DEBUG: Status Code: 200
+DEBUG: Found 14 files.
+File list:
+ - 2025_12_10_lw0sdlwk0000MP_docker.log (2025-12-10T14:43:47.2572444+00:00)
+ - 2025_12_10_lw0sdlwk0000MV_docker.log (2025-12-10T23:11:52.3268241+00:00)
+ - 2025_12_11_lw0sdlwk0000MV_docker.log (2025-12-11T00:55:57.4867472+00:00)
+ - 2025_12_12_ln1mdlwk00000E_docker.log (2025-12-12T03:33:51.6683681+00:00)
+ - 2025_12_13_ln1mdlwk00000E_docker.log (2025-12-13T01:51:04.6775314+00:00)
+ - 2025_12_14_ln0mdlwk00000F_docker.log (2025-12-14T20:20:35.258147+00:00)
+ - 2025_12_14_ln1mdlwk00000E_docker.log (2025-12-14T12:40:37.9491906+00:00)
+ - 2025_12_15_ln0mdlwk00000F_docker.log (2025-12-15T23:57:06.1904101+00:00)
+ - 2025_12_16_ln0mdlwk00000F_docker.log (2025-12-16T04:28:35.8199609+00:00)
+ - 2025_12_17_ln0mdlwk00000F_docker.log (2025-12-17T15:34:36.410252+00:00)
+ - AppServiceAppLogs_Feature_Installer (2025-12-17T14:36:00.0580317+00:00)
+ - CodeProfiler (2025-12-17T14:36:00.0177011+00:00)
+ - kudu (2025-11-29T23:36:35.061287+00:00)
+ - webssh (2025-11-29T23:36:14.8004994+00:00)
+Reading most recent log: 2025_12_17_ln0mdlwk00000F_docker.log...
+--- Last 100 lines of 2025_12_17_ln0mdlwk00000F_docker.log ---
+2025-12-17T15:30:48.0265097Z Mounting volumes.
+2025-12-17T15:30:48.0266889Z Nested mountpoint 
+2025-12-17T15:30:48.0280299Z Nested mountpoint volatile/logs
+2025-12-17T15:30:48.0301416Z Nested mountpoint 
+2025-12-17T15:30:48.0309483Z Nested mountpoint 
+2025-12-17T15:30:48.0327635Z Nested mountpoint 
+2025-12-17T15:30:48.1094360Z Creating container.
+2025-12-17T15:30:48.1096056Z Creating pipes for streaming container io.
+2025-12-17T15:30:48.1097341Z Creating stdout named pipe at /podr/container/pipe/7f273c14db07_zoff-scope-backend/stdout_8d42a5c4a6df48ee8d16191e99689da2.
+2025-12-17T15:30:48.1099764Z Successfully created stdout named pipe at: /podr/container/pipe/7f273c14db07_zoff-scope-backend/stdout_8d42a5c4a6df48ee8d16191e99689da2.
+2025-12-17T15:30:48.1101526Z Opening named pipe /podr/container/pipe/7f273c14db07_zoff-scope-backend/stdout_8d42a5c4a6df48ee8d16191e99689da2 for reading in non-blocking mode.
+2025-12-17T15:30:48.1103287Z Successfully opened named pipe: /podr/container/pipe/7f273c14db07_zoff-scope-backend/stdout_8d42a5c4a6df48ee8d16191e99689da2.
+2025-12-17T15:30:48.1104909Z Successfully removed non-blocking flag from /podr/container/pipe/7f273c14db07_zoff-scope-backend/stdout_8d42a5c4a6df48ee8d16191e99689da2.
+2025-12-17T15:30:48.1107590Z Creating stderr named pipe at /podr/container/pipe/7f273c14db07_zoff-scope-backend/stderr_4afc72ea00bd4656bbe533843be80eeb.
+2025-12-17T15:30:48.1109796Z Successfully created stderr named pipe at: /podr/container/pipe/7f273c14db07_zoff-scope-backend/stderr_4afc72ea00bd4656bbe533843be80eeb.
+2025-12-17T15:30:48.1111071Z Opening named pipe /podr/container/pipe/7f273c14db07_zoff-scope-backend/stderr_4afc72ea00bd4656bbe533843be80eeb for reading in non-blocking mode.
+2025-12-17T15:30:48.1112427Z Successfully opened named pipe: /podr/container/pipe/7f273c14db07_zoff-scope-backend/stderr_4afc72ea00bd4656bbe533843be80eeb.
+2025-12-17T15:30:48.1113762Z Successfully removed non-blocking flag from /podr/container/pipe/7f273c14db07_zoff-scope-backend/stderr_4afc72ea00bd4656bbe533843be80eeb.
+2025-12-17T15:30:48.1115077Z Creating container with image: appsvc/python:3.14_20251017.5.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/python:3.14_20251017.5.tuxprod
+2025-12-17T15:30:48.2627055Z Starting container: 7f273c14db07_zoff-scope-backend.
+2025-12-17T15:30:48.2762945Z Starting watchers and probes.
+2025-12-17T15:30:48.2766036Z Starting metrics collection.
+2025-12-17T15:30:48.2768118Z Container is running.
+2025-12-17T15:30:48.2979616Z Container start method finished after 444 ms.
+2025-12-17T15:30:54.0986988Z Site startup probe succeeded after 5.7996706 seconds.
+2025-12-17T15:30:56.6067029Z Site is running with deployment version: f55242b4-7fc4-4b27-8b9f-08c05db2f77f
+2025-12-17T15:30:56.6070033Z Site started.
+2025-12-17T15:30:56.6096069Z Site is running with patch version PYTHON 3.14.0
+2025-12-17T15:32:28.3905472Z Container start method called.
+2025-12-17T15:32:28.3907723Z Establishing network.
+2025-12-17T15:32:28.3908960Z Pulling image: appsvc/python:3.14_20251017.5.tuxprod.
+2025-12-17T15:32:28.5735860Z Container is starting.
+2025-12-17T15:32:28.5738071Z Establishing user namespace if not established already.
+2025-12-17T15:32:28.5739641Z Establishing network if not established already.
+2025-12-17T15:32:28.5741773Z Mounting volumes.
+2025-12-17T15:32:28.5743843Z Nested mountpoint 
+2025-12-17T15:32:28.5759405Z Nested mountpoint volatile/logs
+2025-12-17T15:32:28.5785977Z Nested mountpoint 
+2025-12-17T15:32:28.5806165Z Nested mountpoint 
+2025-12-17T15:32:28.5815047Z Nested mountpoint 
+2025-12-17T15:32:28.6433453Z Creating container.
+2025-12-17T15:32:28.6434907Z Creating pipes for streaming container io.
+2025-12-17T15:32:28.6436106Z Creating stdout named pipe at /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stdout_1cb493f4a88d4302ad73cd700f24782e.
+2025-12-17T15:32:28.6438446Z Successfully created stdout named pipe at: /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stdout_1cb493f4a88d4302ad73cd700f24782e.
+2025-12-17T15:32:28.6439662Z Opening named pipe /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stdout_1cb493f4a88d4302ad73cd700f24782e for reading in non-blocking mode.
+2025-12-17T15:32:28.6441003Z Successfully opened named pipe: /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stdout_1cb493f4a88d4302ad73cd700f24782e.
+2025-12-17T15:32:28.6442236Z Successfully removed non-blocking flag from /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stdout_1cb493f4a88d4302ad73cd700f24782e.
+2025-12-17T15:32:28.6443419Z Creating stderr named pipe at /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stderr_4c4c5e1948874bc2a6107d495f79dba4.
+2025-12-17T15:32:28.6445123Z Successfully created stderr named pipe at: /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stderr_4c4c5e1948874bc2a6107d495f79dba4.
+2025-12-17T15:32:28.6446367Z Opening named pipe /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stderr_4c4c5e1948874bc2a6107d495f79dba4 for reading in non-blocking mode.
+2025-12-17T15:32:28.6447674Z Successfully opened named pipe: /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stderr_4c4c5e1948874bc2a6107d495f79dba4.
+2025-12-17T15:32:28.6448782Z Successfully removed non-blocking flag from /podr/container/pipe/70eaa890e07b_zoff-scope-backend/stderr_4c4c5e1948874bc2a6107d495f79dba4.
+2025-12-17T15:32:28.6450014Z Creating container with image: appsvc/python:3.14_20251017.5.tuxprod from registry: 10.1.0.5:13209 and fully qualified image name: 10.1.0.5:13209/appsvc/python:3.14_20251017.5.tuxprod
+2025-12-17T15:32:28.7908324Z Starting container: 70eaa890e07b_zoff-scope-backend.
+2025-12-17T15:32:28.8014203Z Starting watchers and probes.
+2025-12-17T15:32:28.8016981Z Starting metrics collection.
+2025-12-17T15:32:28.8018772Z Container is running.
+2025-12-17T15:32:28.8322360Z Container start method finished after 441 ms.
+2025-12-17T15:32:37.1466339Z Site startup probe succeeded after 8.3138166 seconds.
+2025-12-17T15:32:38.8763015Z Site is running with deployment version: 394874ee-8267-414b-bc39-42d89e89e9c2
+2025-12-17T15:32:38.8765576Z Site started.
+2025-12-17T15:32:38.8769331Z Site is running with patch version PYTHON 3.14.0
+2025-12-17T15:32:58.8805319Z Container is terminating. Grace period: 5 seconds.
+2025-12-17T15:32:58.8819958Z Stop and delete container. Retry count = 0
+2025-12-17T15:32:58.8822006Z Stopping container: 7f273c14db07_zoff-scope-backend.
+2025-12-17T15:33:03.9229297Z Deleting container: 7f273c14db07_zoff-scope-backend. Retry count = 0
+2025-12-17T15:33:04.0490091Z Container spec TerminationMessagePolicy  path 
+2025-12-17T15:33:04.0492311Z Container is terminated. Total time elapsed: 5168 ms.
+2025-12-17T15:33:04.0493762Z Site: zoff-scope-backend stopped.
+2025-12-17T15:34:28.8796260Z Container start method called.
+2025-12-17T15:34:28.8798284Z Establishing network.
+2025-12-17T15:34:28.8799681Z Pulling image: appsvc/python:3.14_20251017.5.tuxprod.
+2025-12-17T15:34:29.0400740Z Container is starting.
+2025-12-17T15:34:29.0403337Z Establishing user namespace if not established already.
+2025-12-17T15:34:29.0404985Z Establishing network if not established already.
+2025-12-17T15:34:29.0406783Z Mounting volumes.
+2025-12-17T15:34:29.0408664Z Nested mountpoint 
+2025-12-17T15:34:29.0425375Z Nested mountpoint volatile/logs
+2025-12-17T15:34:29.0465176Z Nested mountpoint 
+2025-12-17T15:34:29.0475424Z Nested mountpoint 
+2025-12-17T15:34:29.0486533Z Nested mountpoint 
+2025-12-17T15:34:29.1077413Z Creating container.
+2025-12-17T15:34:29.1079047Z Creating pipes for streaming container io.
+2025-12-17T15:34:29.1080499Z Creating stdout named pipe at /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stdout_bd34e534fcb3430d8c4885ca46bae36c.
+2025-12-17T15:34:29.1083271Z Successfully created stdout named pipe at: /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stdout_bd34e534fcb3430d8c4885ca46bae36c.
+2025-12-17T15:34:29.1085295Z Opening named pipe /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stdout_bd34e534fcb3430d8c4885ca46bae36c for reading in non-blocking mode.
+2025-12-17T15:34:29.1087368Z Successfully opened named pipe: /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stdout_bd34e534fcb3430d8c4885ca46bae36c.
+2025-12-17T15:34:29.1088727Z Successfully removed non-blocking flag from /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stdout_bd34e534fcb3430d8c4885ca46bae36c.
+2025-12-17T15:34:29.1090230Z Creating stderr named pipe at /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stderr_466155cbfefd41d698cb269380d7db33.
+2025-12-17T15:34:29.1092263Z Successfully created stderr named pipe at: /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stderr_466155cbfefd41d698cb269380d7db33.
+2025-12-17T15:34:29.1095452Z Opening named pipe /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stderr_466155cbfefd41d698cb269380d7db33 for reading in non-blocking mode.
+2025-12-17T15:34:29.1098660Z Successfully opened named pipe: /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stderr_466155cbfefd41d698cb269380d7db33.
+2025-12-17T15:34:29.1102083Z Successfully removed non-blocking flag from /podr/container/pipe/8bde5ee08797_zoff-scope-backend/stderr_466155cbfefd41d698cb269380d7db33.
+2025-12-17T15:34:29.1105315Z Creating container with image: appsvc/python:3.14_20251017.5.tuxprod from registry: 10.1.0.5:13209 and fully qualified image name: 10.1.0.5:13209/appsvc/python:3.14_20251017.5.tuxprod
+2025-12-17T15:34:29.2529052Z Starting container: 8bde5ee08797_zoff-scope-backend.
+2025-12-17T15:34:29.2639659Z Starting watchers and probes.
+2025-12-17T15:34:29.2642937Z Starting metrics collection.
+2025-12-17T15:34:29.2644769Z Container is running.
+2025-12-17T15:34:29.2825180Z Container start method finished after 402 ms.
+2025-12-17T15:34:36.4193248Z Site startup probe succeeded after 7.1360942 seconds.

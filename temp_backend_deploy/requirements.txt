@@ -6,3 +6,4 @@ python-dotenv
 pydantic
 requests
 beautifulsoup4
+gunicorn

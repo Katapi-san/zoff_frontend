@@ -25,6 +25,13 @@ export const getTagBadgeStyle = (tagId: number) => {
     return 'bg-[#951B81]/10 border-[#951B81]/20 text-[#951B81]'; // Purple
 };
 
+export const getTagActiveStyle = (tagId: number) => {
+    if (tagId <= 50) return 'bg-[#00A0E9] text-white border-[#00A0E9]'; // Blue
+    if (tagId <= 100) return 'bg-[#F39800] text-white border-[#F39800]'; // Orange
+    if (tagId <= 200) return 'bg-[#8FC31F] text-white border-[#8FC31F]'; // Green
+    return 'bg-[#951B81] text-white border-[#951B81]'; // Purple
+};
+
 export const getTagTitleColor = (tagId: number) => {
     if (tagId <= 50) return 'text-[#00A0E9]';
     if (tagId <= 100) return 'text-[#F39800]';

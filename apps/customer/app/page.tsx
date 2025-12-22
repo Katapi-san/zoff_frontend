@@ -15,8 +15,13 @@ export default function Home() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20 font-sans">
-      <header className="bg-blue-600 text-white p-4 text-center font-bold text-lg sticky top-0 z-10">
+      <header className="bg-blue-600 text-white p-4 text-center font-bold text-lg sticky top-0 z-10 relative">
         ホーム
+        <a
+          href="/store-management/"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-red-500 opacity-0"
+          aria-label="Secret Admin Link"
+        ></a>
       </header>
 
       <main className="p-4 max-w-md mx-auto pt-10">

@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ChevronLeft, MapPin } from 'lucide-react';
 
-import { fetchStaff, Staff, Tag, Store } from '../../../../lib/api';
-
-// Interfaces (Reuse from staff details) - REMOVED LOCALS to use shared types
+import { fetchStaff, Staff, Tag } from '../../../../lib/api';
+import { getTagBadgeStyle, getTagActiveStyle } from '../../../../lib/tagUtils';
 
 // Mock Menu Data
 const MENU_ITEMS = [
@@ -15,14 +14,19 @@ const MENU_ITEMS = [
     { id: 3, name: '調整・メンテナンス', duration: 15 },
 ];
 
-export default function StaffReservationPage() {
+function StaffReservationContent() {
     const params = useParams(); // params.id
     const router = useRouter();
+    const searchParams = useSearchParams();
+
     const [staff, setStaff] = useState<Staff | null>(null);
     const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
     const [selectedDate, setSelectedDate] = useState<number | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [dates, setDates] = useState<{ month: number; date: number; day: string }[]>([]);
+
+    // Tag selection state
+    const [selectedTags, setSelectedTags] = useState<number[]>([]);
 
     useEffect(() => {
         const list = [];
@@ -53,10 +57,36 @@ export default function StaffReservationPage() {
         loadStaff();
     }, [params.id]);
 
+    useEffect(() => {
+        // Initialize selected tags from query params
+        const tagsParam = searchParams.get('tags');
+        if (tagsParam) {
+            const tagIds = tagsParam.split(',').map(Number).filter(n => !isNaN(n));
+            setSelectedTags(tagIds);
+        }
+
+        // Initialize menu from query params
+        const menuIdParam = searchParams.get('menuId');
+        if (menuIdParam) {
+            const mId = Number(menuIdParam);
+            if (!isNaN(mId)) {
+                setSelectedMenuId(mId);
+            }
+        }
+    }, [searchParams]);
+
     // Reset time when date or menu changes
     useEffect(() => {
         setSelectedTime(null);
     }, [selectedDate, selectedMenuId]);
+
+    const toggleTag = (tagId: number) => {
+        setSelectedTags(prev =>
+            prev.includes(tagId)
+                ? prev.filter(id => id !== tagId)
+                : [...prev, tagId]
+        );
+    };
 
     if (!staff) return <div className="p-10 text-center text-gray-500">読み込み中...</div>;
 
@@ -71,9 +101,6 @@ export default function StaffReservationPage() {
         let startMinute = 0;
         const endHour = 20;
 
-        // Generate slots from 10:00 to 19:xx depending on duration
-        // Last slot should allow finishing by 20:00 or similar business rule
-        // checking startHour < 20 is a safe bet for "Open until 20:00"
         while (startHour < endHour) {
             const timeString = `${startHour}:${startMinute.toString().padStart(2, '0')}`;
             slots.push(timeString);
@@ -104,12 +131,15 @@ export default function StaffReservationPage() {
     };
 
     const handleReservation = () => {
-        if (!staff || !selectedDate || !selectedTime || !selectedDateObj) return;
+        if (!staff || !selectedDate || !selectedTime || !selectedDateObj || !selectedMenu) return;
 
         const query = new URLSearchParams({
             staffName: staff.display_name || '',
+            storeName: staff.store?.name || '店舗未設定',
             date: `${selectedDateObj.month}月${selectedDateObj.date}日`,
-            time: selectedTime
+            time: selectedTime,
+            menuName: selectedMenu.name, // Add menu name
+            tags: selectedTags.join(',')
         });
 
         router.push(`/reservation/complete?${query.toString()}`);
@@ -146,10 +176,23 @@ export default function StaffReservationPage() {
                             <MapPin size={14} className="mr-1" />
                             {staff.store?.name || "店舗未設定"}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                            {(staff.tags || []).slice(0, 3).map(tag => (
-                                <span key={tag.id} className="text-xs text-blue-500">#{tag.name}</span>
-                            ))}
+                        <div className="flex flex-wrap gap-2">
+                            {(staff.tags || []).map(tag => {
+                                const isSelected = selectedTags.includes(tag.id);
+                                return (
+                                    <button
+                                        key={tag.id}
+                                        onClick={() => toggleTag(tag.id)}
+                                        className={`px-2 py-1 rounded text-xs font-bold border transition-colors ${isSelected
+                                            ? getTagActiveStyle(tag.id)
+                                            : `${getTagBadgeStyle(tag.id)} hover:opacity-80`
+                                            }`}
+                                    >
+                                        #{tag.name}
+                                        {isSelected && <span className="ml-1 inline-block">✓</span>}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
@@ -215,10 +258,10 @@ export default function StaffReservationPage() {
                                                 disabled={disabled}
                                                 onClick={() => setSelectedTime(time)}
                                                 className={`py-2 px-1 rounded-lg text-sm font-bold border transition-all ${disabled
-                                                        ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
-                                                        : selectedTime === time
-                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-500'
+                                                    ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed'
+                                                    : selectedTime === time
+                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-500'
                                                     }`}
                                             >
                                                 {time}
@@ -256,5 +299,13 @@ export default function StaffReservationPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function StaffReservationPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <StaffReservationContent />
+        </Suspense>
     );
 }

@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from app import models, schemas
 from app.database import get_db
-from app.models.store import Store, Staff
+from app.models import Store, Staff
 
 router = APIRouter(
     prefix="/stores",
